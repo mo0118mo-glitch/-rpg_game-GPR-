@@ -17,7 +17,11 @@
 
     <div id="start-screen" style="display: none;">
         <input type="text" id="nickname-input" placeholder="닉네임을 입력하세요">
-        <button id="start-button">게임 시작</button>
+    <div class="game-mode-selection">
+        <label><input type="radio" name="gameMode" value="easy" checked> 이지 모드</label>
+        <label><input type="radio" name="gameMode" value="hard"> 하드 모드</label>
+    </div>
+    <button id="start-button">게임 시작</button>
     </div>
 
     <div id="game-wrapper" style="display: none;">

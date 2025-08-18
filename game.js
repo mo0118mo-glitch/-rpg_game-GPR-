@@ -670,7 +670,20 @@ function update() {
             }
             player.hp -= damageTaken;
             player.damageCooldown = 1000;
-            if (player.hp <= 0) { alert("게임 오버"); document.location.reload(); }
+            if (player.hp <= 0) {
+        if (gameMode === 'easy') {
+            player.exp = Math.max(0, player.exp - Math.floor(player.exp * 0.10)); // Lose 10% exp
+            player.hp = player.maxHp; // Restore HP
+            player.x = (maps.overworld.layout[0].length / 2) * tileSize; // Return to town center
+            player.y = (maps.overworld.layout.length / 2) * tileSize;
+            currentMapId = 'overworld'; // Ensure map is overworld
+            spawnMonsters(); // Respawn monsters in new map
+            alert("쓰러졌습니다! 경험치 10%를 잃고 마을로 돌아왔습니다.");
+        } else { // Hard mode or default
+            alert("게임 오버");
+            document.location.reload();
+        }
+    }
         }
     });
 
