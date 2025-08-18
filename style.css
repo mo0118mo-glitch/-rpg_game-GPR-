@@ -7,6 +7,7 @@ body {
     align-items: center;
     margin: 0;
     padding-top: 20px;
+    overflow: hidden;
 }
 
 h1 {
@@ -55,6 +56,25 @@ canvas {
 }
 
 /* Shop Styles */
+
+.modal-content {
+    background-color: #333;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+#shop-modal .modal-content {
+    max-width: 270px;
+}
+
+#settings-modal .modal-content {
+    max-width: 270px;
+}
+
 #shop-container {
     width: 600px;
     padding: 20px;
@@ -325,22 +345,7 @@ canvas {
     cursor: not-allowed;
 }
 
-#close-skill-btn {
-    padding: 10px 20px;
-    font-size: 1.2em;
-    background-color: #4a4a4a;
-    color: #fff;
-    border: 2px solid #ffd700;
-    border-radius: 5px;
-    cursor: pointer;
-    display: block;
-    margin: 20px auto 0;
-}
 
-#close-skill-btn:hover {
-    background-color: #ffd700;
-    color: #1a1a1a;
-}
 
 #potion-modal, #shop-modal {
     display: none; /* Hidden by default */
