@@ -850,7 +850,8 @@ function useSkill(skillType) {
                     color: 'orange',
                     isProjectile: true,
                     dx: dx,
-                    dy: dy
+                    dy: dy,
+                    piercing: false
                 };
             } else if (skillType === 'strong') { // 라이트닝
                 const lightningRadius = tileSize * 1.5; // 2인 간격
