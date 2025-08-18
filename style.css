@@ -316,9 +316,12 @@ canvas {
     border-radius: 5px;
 }
 
-.skill-item h3 {
-    margin: 0 0 5px 0;
-    color: #ffd700;
+.modal-content h2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Vertically align title and button */
+    margin-top: 0; /* Remove default h2 top margin */
+    margin-bottom: 15px; /* Add some space below the header */
 }
 
 .skill-item p {
