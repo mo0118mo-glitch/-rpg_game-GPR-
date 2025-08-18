@@ -15,7 +15,7 @@ const subspeciesMonsters = {
 const skills = {
     '검사': {
         weak: { name: '가로배기', manaCost: 3, damage: 3, cooldown: 5000, description: '전방에 있는 적에게 3의 데미지를 줍니다.' },
-        strong: { name: '강타', manaCost: 8, damage: 5, cooldown: 10000, description: '한 적에게 5의 데미지를 줍니다.' },
+        strong: { name: '강타', manaCost: 8, damage: 5, cooldown: 10000, range: 120, description: '사거리 내 한 적에게 5의 데미지를 줍니다.' },
         ultimate: { name: '회전베기', manaCost: 20, damage: 10, cooldown: 0, description: '전방위의 적들에게 10의 데미지를 줍니다.' }
     },
     '마법사': {
