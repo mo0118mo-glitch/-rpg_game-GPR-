@@ -1326,4 +1326,18 @@ window.addEventListener('DOMContentLoaded', () => {
     closeSettingsBtn.addEventListener('click', closeSettingsModal);
     closePotionBtn.addEventListener('click', closePotionModal);
     closeSkillBtn.addEventListener('click', closeSkillModal);
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const settingsModal = document.getElementById('settings-modal');
+            const potionModal = document.getElementById('potion-modal');
+            const skillModal = document.getElementById('skill-modal');
+            const shopModal = document.getElementById('shop-modal');
+
+            if (settingsModal.style.display === 'flex') closeSettingsModal();
+            if (potionModal.style.display === 'flex') closePotionModal();
+            if (skillModal.style.display === 'flex') closeSkillModal();
+            if (shopModal.style.display === 'flex') closeShop();
+        }
+    });
 });
