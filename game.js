@@ -52,6 +52,7 @@ function getKeyDisplayName(key) {
 // --- 게임 데이터 ---
 let currentMapId = 'overworld';
 let gamePaused = false;
+let gameMode = 'normal'; // 'easy' or 'normal'
 
 const player = {
     x: 0, y: 0, // 시작 위치는 init에서 설정
