@@ -1226,7 +1226,7 @@ function loadPlayerState() {
             return;
         }
         Object.assign(player, savedPlayer);
-    }
+        player.isStealthed = false; // 불러올 때 은신 상태 초기화
 }
 function saveKeyMap() {
     localStorage.setItem('keyMap', JSON.stringify(keyMap));
