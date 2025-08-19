@@ -1216,6 +1216,7 @@ function populateSkillList() {
 }
 
 function savePlayerState() { localStorage.setItem('playerState', JSON.stringify(player)); }
+
 function loadPlayerState() {
     const saved = localStorage.getItem('playerState');
     if (saved) {
@@ -1231,6 +1232,7 @@ function loadPlayerState() {
         player.isStealthed = false; // 불러올 때 은신 상태 초기화
     }
 }
+
 function saveKeyMap() {
     localStorage.setItem('keyMap', JSON.stringify(keyMap));
 }
