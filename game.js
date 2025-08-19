@@ -81,6 +81,7 @@ const player = {
 
 let monsters = [];
 const deadMonsters = [];
+let nextMonsterId = 1;
 const activeAttacks = [];
 const activeGroundEffects = [];
 const camera = { x: 0, y: 0, width: canvas.width, height: canvas.height };
@@ -486,7 +487,7 @@ function spawnMonsters() {
 
     map.monsters.forEach(monsterInfo => {
         for (let i = 0; i < monsterInfo.count; i++) {
-            const newMonster = { ...monsterInfo.type };
+            const newMonster = { ...monsterInfo.type, id: nextMonsterId++ };
             let placed = false;
             while (!placed) {
                 const x = Math.floor(Math.random() * map.layout[0].length) * tileSize;
