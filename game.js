@@ -4,6 +4,15 @@ const ctx = canvas.getContext('2d');
 // --- 설정 ---
 const tileSize = 40;
 const MONSTER_RESPAWN_TIME = 10000;
+let currentLanguage = 'ko';
+
+function getTranslation(key, replacements = {}) {
+    let translation = languages[currentLanguage][key] || key;
+    for (const placeholder in replacements) {
+        translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+    }
+    return translation;
+}
 
 // --- 키 설정 ---
 const defaultKeyMap = {
@@ -22,21 +31,21 @@ let keyMap = { ...defaultKeyMap };
 const actionState = {};
 
 const actionTranslations = {
-    up: '위로',
-    down: '아래로',
-    left: '왼쪽',
-    right: '오른쪽',
-    attack: '공격',
-    interact: '상호작용',
-    potion: '물약',
-    weakSkill: '약한 스킬',
-    strongSkill: '강한 스킬',
-    ultimateSkill: '궁극기'
+    up: 'up',
+    down: 'down',
+    left: 'left',
+    right: 'right',
+    attack: 'attack',
+    interact: 'interact',
+    potion: 'potion',
+    weakSkill: 'weak_skill',
+    strongSkill: 'strong_skill',
+    ultimateSkill: 'ultimate_skill'
 };
 
 function getKeyDisplayName(key) {
-    if (key === 'mouse0') return '좌클릭';
-    if (key === 'mouse2') return '우클릭';
+    if (key === 'mouse0') return getTranslation('left_click');
+    if (key === 'mouse2') return getTranslation('right_click');
     return key.toUpperCase();
 }
 
@@ -53,14 +62,16 @@ const player = {
     maxLevel: 50,
     exp: 0,
     requiredExp: 10,
-    job: '무직',
+    job: 'no_job',
     nickname: 'Player',
-    attack: 1, 
+    physicalAttack: 1, // Base physical attack
+    magicAttack: 0,    // Base magic attack
     gold: 0, 
     inventory: { potion: 0, smallPotion: 0 }, 
     lastDirection: 'right', 
     attackCooldown: 0, 
     damageCooldown: 0,
+    isStealthed: false,
     returnPos: { x: 0, y: 0 }, // 던전에서 돌아올 위치
     skills: { weak: null, strong: null, ultimate: null },
     skillCooldowns: { weak: 0, strong: 0, ultimate: 0 },
@@ -73,8 +84,6 @@ const activeAttacks = [];
 const activeGroundEffects = [];
 const camera = { x: 0, y: 0, width: canvas.width, height: canvas.height };
 let backgroundCanvas = null; // 오버월드 배경용
-
-
 
 function createMap(cols, rows, wallProbability = 0) {
     const map = [];
@@ -96,36 +105,36 @@ const maps = {
     overworld: {
         layout: createMap(100, 100),
         npcs: [
-            { id: 1, name: '상인', x: (50 + 2) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
-            { id: 2, name: '전직관', x: (50 + 8) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
-            { id: 4, name: '스킬관', x: (50 + 5) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
-            { id: 3, name: '삭제관', x: (50 + 14) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' }
+            { id: 1, name: 'merchant', x: (50 + 2) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
+            { id: 2, name: 'job_master', x: (50 + 8) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
+            { id: 4, name: 'skill_master', x: (50 + 5) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
+            { id: 3, name: 'reset_master', x: (50 + 14) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' }
         ],
         monsters: [],
         portals: [
-            { name: '슬라임 동굴', x: (50 + 20) * tileSize, y: 50 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: '고블린 동굴', x: (50 + 22) * tileSize, y: 50 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: '오크 동굴', x: (50 + 24) * tileSize, y: 50 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: '아종의 동굴', x: (50 + 26) * tileSize, y: 50 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
+            { name: 'slime_dungeon', x: (50 + 20) * tileSize, y: 50 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'goblin_dungeon', x: (50 + 22) * tileSize, y: 50 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'orc_dungeon', x: (50 + 24) * tileSize, y: 50 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'subspecies_dungeon', x: (50 + 26) * tileSize, y: 50 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
         ]
     },
     slimeDungeon: {
         layout: createMap(20, 20, 0),
         npcs: [],
         monsters: [{ type: initialMonsters.slime, count: 5 }],
-        portals: [{ name: '출구', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     },
     goblinDungeon: {
         layout: createMap(20, 20, 0),
         npcs: [],
         monsters: [{ type: initialMonsters.goblin, count: 5 }],
-        portals: [{ name: '출구', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     },
     orcDungeon: {
         layout: createMap(20, 20, 0),
         npcs: [],
         monsters: [{ type: initialMonsters.orc, count: 5 }],
-        portals: [{ name: '출구', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     },
     subspeciesDungeon: {
         layout: createMap(25, 25, 0),
@@ -135,7 +144,7 @@ const maps = {
             { type: subspeciesMonsters.goblin, count: 1 },
             { type: subspeciesMonsters.orc, count: 1 }
         ],
-        portals: [{ name: '출구', x: 2 * tileSize, y: 23 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 23 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     }
 };
 
@@ -155,7 +164,7 @@ window.addEventListener('keydown', (e) => {
         e.preventDefault();
         const newKey = e.key.toLowerCase();
         if (Object.values(keyMap).includes(newKey)) {
-            alert('이미 사용 중인 키입니다!');
+            alert(getTranslation('key_in_use'));
             populateKeybindList();
             changingKeyFor = null;
             return;
@@ -176,18 +185,16 @@ window.addEventListener('keyup', (e) => {
 });
 
 window.addEventListener('mousedown', (e) => {
-    // Prevent context menu everywhere, especially for keybinding
     if (e.button === 2) {
         e.preventDefault();
     }
 
     if (changingKeyFor) {
-        // We are waiting for a keybind change
         e.preventDefault();
         const newKey = `mouse${e.button}`;
         if (Object.values(keyMap).includes(newKey)) {
-            alert('이미 사용 중인 키입니다!');
-            populateKeybindList(); // Reset button text
+            alert(getTranslation('key_in_use'));
+            populateKeybindList();
             changingKeyFor = null;
             return;
         }
@@ -196,7 +203,6 @@ window.addEventListener('mousedown', (e) => {
         changingKeyFor = null;
         populateKeybindList();
     } else {
-        // Not changing a key, handle as game input only if clicking on the canvas
         if (e.target === canvas) {
             handleInput(`mouse${e.button}`, true);
         }
@@ -204,16 +210,13 @@ window.addEventListener('mousedown', (e) => {
 });
 
 window.addEventListener('mouseup', (e) => {
-    // Only handle game input if releasing on the canvas
     if (e.target === canvas) {
         handleInput(`mouse${e.button}`, false);
     }
 });
 
-// Prevent context menu on canvas, though handled in mousedown now
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-// --- 그리기 함수 ---
 function createOverworldBackground() {
     const map = maps.overworld;
     const mapWidth = map.layout[0].length * tileSize;
@@ -303,7 +306,6 @@ function draw() {
     ctx.save();
     ctx.translate(-camera.x, -camera.y);
 
-    // Draw background & map
     if (currentMapId === 'overworld' && backgroundCanvas) {
         ctx.drawImage(backgroundCanvas, 0, 0);
     } else {
@@ -323,24 +325,21 @@ function draw() {
         }
     }
 
-    // Draw portals
     map.portals.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, tileSize, tileSize);
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
-        ctx.fillText(p.name, p.x + tileSize / 2, p.y - 5);
+        ctx.fillText(getTranslation(p.name), p.x + tileSize / 2, p.y - 5);
     });
 
-    // Draw houses
     if (map.npcs) {
-        const npcsWithHouses = ['상인', '전직관', '삭제관'];
+        const npcsWithHouses = ['merchant', 'job_master', 'reset_master'];
         map.npcs.forEach(npc => {
             if (npcsWithHouses.includes(npc.name)) drawHouse(npc);
         });
     }
 
-    // Draw game objects
     activeAttacks.forEach(attack => {
         ctx.fillStyle = attack.color || `rgba(255, 0, 0, ${attack.alpha})`;
         if (attack.isCircular) {
@@ -350,7 +349,7 @@ function draw() {
         } else if (attack.isProjectile && attack.rotationSpeed) { // 단검던지기
             ctx.save();
             ctx.translate(attack.x + attack.width / 2, attack.y + attack.height / 2);
-            ctx.rotate(attack.rotation * Math.PI / 180); // Convert degrees to radians
+            ctx.rotate(attack.rotation * Math.PI / 180);
             ctx.fillRect(-attack.width / 2, -attack.height / 2, attack.width, attack.height);
             ctx.restore();
         } else {
@@ -379,14 +378,22 @@ function draw() {
             drawDirectionDots(ctx, npc);
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
-            ctx.fillText(npc.name, npc.x + npc.width / 2, npc.y - 5);
+            ctx.fillText(getTranslation(npc.name), npc.x + npc.width / 2, npc.y - 5);
         });
     }
+
+    if (player.isStealthed) {
+        ctx.globalAlpha = 0.5;
+    }
+
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
     drawDirectionDots(ctx, player);
 
-    // Draw nickname
+    if (player.isStealthed) {
+        ctx.globalAlpha = 1.0;
+    }
+
     if (player.nickname) {
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
@@ -396,17 +403,16 @@ function draw() {
 
     ctx.restore();
 
-    // Draw UI
     ctx.fillStyle = 'white';
     ctx.font = '18px Arial';
     let uiY = 35;
     const uiX = 10;
     const lineHeight = 35;
-    ctx.fillText(`Level: ${player.level}`, uiX, uiY);
+    ctx.fillText(`${getTranslation('level')}: ${player.level}`, uiX, uiY);
     uiY += lineHeight;
-    ctx.fillText(`EXP: ${player.exp} / ${player.requiredExp}`, uiX, uiY);
+    ctx.fillText(`${getTranslation('exp')}: ${player.exp} / ${player.requiredExp}`, uiX, uiY);
     uiY += lineHeight;
-    ctx.fillText(`HP: ${player.hp} / ${player.maxHp}`, uiX, uiY);
+    ctx.fillText(`${getTranslation('hp')}: ${player.hp} / ${player.maxHp}`, uiX, uiY);
     uiY += 10;
     ctx.fillStyle = 'gray';
     ctx.fillRect(uiX, uiY, 200, 10);
@@ -414,7 +420,7 @@ function draw() {
     ctx.fillRect(uiX, uiY, 200 * (player.hp / player.maxHp), 10);
     uiY += 25;
     ctx.fillStyle = 'white';
-    ctx.fillText(`Mana: ${player.mana} / ${player.maxMana}`, uiX, uiY);
+    ctx.fillText(`${getTranslation('mana')}: ${player.mana} / ${player.maxMana}`, uiX, uiY);
     uiY += 10;
     ctx.fillStyle = 'gray';
     ctx.fillRect(uiX, uiY, 200, 10);
@@ -422,7 +428,7 @@ function draw() {
     ctx.fillRect(uiX, uiY, 200 * (player.mana / player.maxMana), 10);
     uiY += 25;
     ctx.fillStyle = 'white';
-    ctx.fillText(`Ultimate: ${player.ultimateGauge} / ${player.maxUltimateGauge}`, uiX, uiY);
+    ctx.fillText(`${getTranslation('ultimate')}: ${player.ultimateGauge} / ${player.maxUltimateGauge}`, uiX, uiY);
     uiY += 10;
     ctx.fillStyle = 'gray';
     ctx.fillRect(uiX, uiY, 200, 10);
@@ -430,17 +436,16 @@ function draw() {
     ctx.fillRect(uiX, uiY, 200 * (player.ultimateGauge / player.maxUltimateGauge), 10);
     uiY += 25;
     uiY += lineHeight;
-    ctx.fillText(`Gold: ${player.gold}`, uiX, uiY);
+    ctx.fillText(`${getTranslation('gold')}: ${player.gold}`, uiX, uiY);
     uiY += lineHeight;
-    ctx.fillText(`직업: ${player.job}`, uiX, uiY);
+    ctx.fillText(`${getTranslation('job')}: ${getTranslation(player.job)}`, uiX, uiY);
     uiY += lineHeight;
-    ctx.fillText(`Potions: ${getKeyDisplayName(keyMap.potion)} key`, uiX, uiY);
+    ctx.fillText(`${getTranslation('potions')}: ${getKeyDisplayName(keyMap.potion)} key`, uiX, uiY);
 }
 
-// --- 업데이트 로직 ---
 function levelUp() {
     if (player.level >= player.maxLevel) {
-        player.exp = 0; // 만렙이면 경험치 초기화 또는 최대치로 고정
+        player.exp = 0;
         return;
     }
     while (player.exp >= player.requiredExp && player.level < player.maxLevel) {
@@ -502,7 +507,6 @@ function update() {
     if (gamePaused) return;
     const now = Date.now();
 
-    // Cooldowns & Regen
     if (player.attackCooldown > 0) player.attackCooldown -= 16;
     for (const type in player.skillCooldowns) {
         if (player.skillCooldowns[type] > 0) {
@@ -517,7 +521,6 @@ function update() {
         player.manaRegenTimer = 0;
     }
 
-    // Player Movement & Portal Collision
     let nextX = player.x, nextY = player.y;
     if (actionState.up) { nextY -= player.speed; player.lastDirection = 'up'; }
     if (actionState.down) { nextY += player.speed; player.lastDirection = 'down'; }
@@ -539,7 +542,6 @@ function update() {
         }
     });
 
-    // Other updates
     if (actionState.interact) {
         if(currentMap.npcs) {
             for (const npc of currentMap.npcs) {
@@ -573,7 +575,6 @@ function update() {
         actionState.ultimateSkill = false;
     }
 
-    // Update and apply attacks
     for (let i = activeAttacks.length - 1; i >= 0; i--) {
         const attack = activeAttacks[i];
         const elapsed = now - attack.createdAt;
@@ -582,7 +583,7 @@ function update() {
             attack.x += attack.dx;
             attack.y += attack.dy;
             if (attack.rotationSpeed) {
-                attack.rotation += attack.rotationSpeed * 16; // 16ms per frame
+                attack.rotation += attack.rotationSpeed * 16;
             }
         }
 
@@ -606,17 +607,15 @@ function update() {
         }
     }
 
-    // Update and apply ground effects
     for (let i = activeGroundEffects.length - 1; i >= 0; i--) {
         const effect = activeGroundEffects[i];
         const elapsed = now - effect.createdAt;
-        effect.alpha = 0.5 * (1 - elapsed / effect.duration); // Fade out
+        effect.alpha = 0.5 * (1 - elapsed / effect.duration);
 
         if (elapsed >= effect.duration) {
             activeGroundEffects.splice(i, 1);
         } else {
-            // Apply DoT
-            if (now - effect.lastDamageTime >= 1000) { // Every 1 second
+            if (now - effect.lastDamageTime >= 1000) { 
                 monsters.forEach(monster => {
                     const effectCenterX = effect.x;
                     const effectCenterY = effect.y;
@@ -625,9 +624,8 @@ function update() {
                     const distance = Math.sqrt(Math.pow(effectCenterX - monsterCenterX, 2) + Math.pow(effectCenterY - monsterCenterY, 2));
 
                     if (distance < (effect.radius + monster.width / 2)) {
-                        // Check if monster has been hit by this specific DoT instance recently
                         const lastHit = effect.hitMonsters.find(h => h.id === monster.id);
-                        if (!lastHit || (now - lastHit.time) >= effect.dotDuration) { // Reset duration if hit again
+                        if (!lastHit || (now - lastHit.time) >= effect.dotDuration) { 
                             monster.hp -= effect.damagePerSecond;
                             if (lastHit) {
                                 lastHit.time = now;
@@ -636,7 +634,7 @@ function update() {
                                 player.gold += monster.gold;
                                 gainExp(monster.exp);
                                 deadMonsters.push({ ...monster, diedAt: now });
-                                monsters = monsters.filter(m => m.id !== monster.id); // Remove dead monster
+                                monsters = monsters.filter(m => m.id !== monster.id);
                             }
                         }
                     }
@@ -651,19 +649,13 @@ function update() {
         const dx = player.x - monster.x, dy = player.y - monster.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        const stealthBuff = player.buffs.find(buff => buff.type === 'stealth');
-        if (stealthBuff) {
-            // 몬스터가 플레이어를 무시
-            return;
-        }
-
-        if (distance < monster.detectionRange) {
+        if (!player.isStealthed && distance < monster.detectionRange) {
             monster.x += (dx / distance) * monster.speed;
             monster.y += (dy / distance) * monster.speed;
         }
+
         if (isColliding(player, monster) && player.damageCooldown <= 0) {
             let damageTaken = monster.attack;
-            // Apply Holy Armor buff
             const holyArmorBuff = player.buffs.find(buff => buff.type === 'holyArmor');
             if (holyArmorBuff) {
                 damageTaken *= (1 - holyArmorBuff.damageReduction);
@@ -671,23 +663,22 @@ function update() {
             player.hp -= damageTaken;
             player.damageCooldown = 1000;
             if (player.hp <= 0) {
-        if (gameMode === 'easy') {
-            player.exp = Math.max(0, player.exp - Math.floor(player.exp * 0.10)); // Lose 10% exp
-            player.hp = player.maxHp; // Restore HP
-            player.x = (maps.overworld.layout[0].length / 2) * tileSize; // Return to town center
-            player.y = (maps.overworld.layout.length / 2) * tileSize;
-            currentMapId = 'overworld'; // Ensure map is overworld
-            spawnMonsters(); // Respawn monsters in new map
-            alert("쓰러졌습니다! 경험치 10%를 잃고 마을로 돌아왔습니다.");
-        } else { // Hard mode or default
-            alert("게임 오버");
-            document.location.reload();
-        }
-    }
+                if (gameMode === 'easy') {
+                    player.exp = Math.max(0, player.exp - Math.floor(player.exp * 0.10));
+                    player.hp = player.maxHp;
+                    player.x = (maps.overworld.layout[0].length / 2) * tileSize;
+                    player.y = (maps.overworld.layout.length / 2) * tileSize;
+                    currentMapId = 'overworld';
+                    spawnMonsters();
+                    alert(getTranslation('death_penalty'));
+                } else { 
+                    alert(getTranslation('game_over'));
+                    document.location.reload();
+                }
+            }
         }
     });
 
-    // Update and draw buffs
     for (let i = player.buffs.length - 1; i >= 0; i--) {
         const buff = player.buffs[i];
         if (Date.now() - buff.createdAt >= buff.duration) {
@@ -711,7 +702,7 @@ function handlePlayerAttack() {
     if (player.attackCooldown > 0) return;
     player.attackCooldown = 500;
     const attackRange = 100, attackSize = 30;
-    let attack = { x: player.x + player.width / 2 - attackSize / 2, y: player.y + player.height / 2 - attackSize / 2, width: attackSize, height: attackSize, alpha: 0.5, createdAt: Date.now(), duration: 200, damage: player.attack, hitMonsters: [] };
+    let attack = { x: player.x + player.width / 2 - attackSize / 2, y: player.y + player.height / 2 - attackSize / 2, width: attackSize, height: attackSize, alpha: 0.5, createdAt: Date.now(), duration: 200, damage: player.physicalAttack, damageType: 'physical', hitMonsters: [] };
     switch (player.lastDirection) {
         case 'up': attack.y -= attackRange / 2; attack.width = attackSize * 2; attack.height = attackRange; break;
         case 'down': attack.y += attackRange / 2; attack.width = attackSize * 2; attack.height = attackRange; break;
@@ -724,15 +715,15 @@ function handlePlayerAttack() {
 
 function useSkill(skillType) {
     const skill = player.skills[skillType];
-    if (!skill) return; // 스킬을 배우지 않음
-    if (player.skillCooldowns[skillType] > 0) return; // 쿨타임
+    if (!skill) return;
+    if (player.skillCooldowns[skillType] > 0) return;
     if (player.mana < skill.manaCost) {
-        alert('마나가 부족합니다!');
+        alert(getTranslation('no_mana'));
         return;
     }
 
     if (skillType === 'ultimate' && player.ultimateGauge < player.maxUltimateGauge) {
-        alert('궁극기 게이지가 부족합니다!');
+        alert(getTranslation('no_ultimate'));
         return;
     }
 
@@ -744,7 +735,7 @@ function useSkill(skillType) {
     } else if (skillType === 'strong') {
         player.ultimateGauge = Math.min(player.maxUltimateGauge, player.ultimateGauge + 20);
     } else if (skillType === 'ultimate') {
-        player.ultimateGauge = 0; // 궁극기 사용 시 게이지 소모
+        player.ultimateGauge = 0;
     }
 
     if (skill.heal) {
@@ -756,8 +747,15 @@ function useSkill(skillType) {
         const baseAttackSize = 30;
         const baseAttackRange = 100;
 
+        let baseDamage = 0;
+        if (skill.damageType === 'physical') {
+            baseDamage = player.physicalAttack;
+        } else if (skill.damageType === 'magic') {
+            baseDamage = player.magicAttack;
+        }
+
         if (player.job === '검사') {
-            if (skillType === 'weak') { // 가로배기
+            if (skillType === 'weak') { 
                 attack = {
                     x: player.x + player.width / 2 - baseAttackSize * 1.5,
                     y: player.y + player.height / 2 - baseAttackSize * 1.5,
@@ -767,19 +765,18 @@ function useSkill(skillType) {
                     createdAt: Date.now(),
                     duration: 200,
                     hitMonsters: [],
-                    damage: player.attack + skill.damage,
+                    damage: baseDamage + skill.damage,
+                    damageType: skill.damageType,
                     isSkill: true,
-                    color: 'rgba(255, 165, 0, 0.8)' // 주황색
+                    color: 'rgba(255, 165, 0, 0.8)'
                 };
-                // Adjust for direction
                 switch (player.lastDirection) {
                     case 'up': attack.y -= baseAttackSize * 2; attack.height = baseAttackSize * 4; break;
                     case 'down': attack.y += baseAttackSize * 2; attack.height = baseAttackSize * 4; break;
                     case 'left': attack.x -= baseAttackSize * 2; attack.width = baseAttackSize * 4; break;
                     case 'right': attack.x += baseAttackSize * 2; attack.width = baseAttackSize * 4; break;
                 }
-            } else if (skillType === 'strong') { // 강타
-                // Find closest monster
+            } else if (skillType === 'strong') { 
                 let closestMonster = null;
                 let minDistance = Infinity;
                 monsters.forEach(m => {
@@ -800,17 +797,17 @@ function useSkill(skillType) {
                         createdAt: Date.now(),
                         duration: 150,
                         hitMonsters: [],
-                        damage: player.attack + skill.damage,
+                        damage: baseDamage + skill.damage,
+                        damageType: skill.damageType,
                         isSkill: true,
-                        color: 'rgba(255, 0, 0, 0.9)' // 빨간색
+                        color: 'rgba(255, 0, 0, 0.9)'
                     };
                 } else {
-                    // No monster to hit, refund mana and cooldown
                     player.mana += skill.manaCost;
                     player.skillCooldowns[skillType] = 0;
                     return;
                 }
-            } else if (skillType === 'ultimate') { // 회전베기
+            } else if (skillType === 'ultimate') { 
                 attack = {
                     x: player.x - baseAttackSize * 2,
                     y: player.y - baseAttackSize * 2,
@@ -820,14 +817,15 @@ function useSkill(skillType) {
                     createdAt: Date.now(),
                     duration: 400,
                     hitMonsters: [],
-                    damage: player.attack + skill.damage,
+                    damage: baseDamage + skill.damage,
                     isSkill: true,
-                    color: 'rgba(100, 0, 255, 0.7)', // 보라색
-                    isCircular: true // 원형 공격임을 표시
+                    color: 'rgba(100, 0, 255, 0.7)',
+                    isCircular: true,
+                    damageType: skill.damageType
                 };
             }
         } else if (player.job === '마법사') {
-            if (skillType === 'weak') { // 파이어볼
+            if (skillType === 'weak') { 
                 const projectileSpeed = 10;
                 let dx = 0, dy = 0;
                 switch (player.lastDirection) {
@@ -843,9 +841,10 @@ function useSkill(skillType) {
                     height: 20,
                     alpha: 1,
                     createdAt: Date.now(),
-                    duration: 1000, // Projectile lifetime
+                    duration: 1000,
                     hitMonsters: [],
-                    damage: player.attack + skill.damage,
+                    damage: baseDamage + skill.damage,
+                    damageType: skill.damageType,
                     isSkill: true,
                     color: 'orange',
                     isProjectile: true,
@@ -853,9 +852,9 @@ function useSkill(skillType) {
                     dy: dy,
                     piercing: false
                 };
-            } else if (skillType === 'strong') { // 라이트닝
-                const lightningRadius = tileSize * 1.5; // 2인 간격
-                const offset = tileSize * 2; // 플레이어로부터의 거리
+            } else if (skillType === 'strong') { 
+                const lightningRadius = tileSize * 1.5;
+                const offset = tileSize * 2;
                 let targetX = player.x, targetY = player.y;
                 switch (player.lastDirection) {
                     case 'up': targetY -= offset; break;
@@ -872,13 +871,14 @@ function useSkill(skillType) {
                     createdAt: Date.now(),
                     duration: 200,
                     hitMonsters: [],
-                    damage: player.attack + skill.damage,
+                    damage: baseDamage + skill.damage,
+                    damageType: skill.damageType,
                     isSkill: true,
-                    color: 'rgba(0, 255, 255, 0.8)', // 청록색
+                    color: 'rgba(0, 255, 255, 0.8)',
                     isCircular: true
                 };
-            } else if (skillType === 'ultimate') { // 메테오
-                const meteorRadius = tileSize * 4.5; // 라이트닝 범위의 3배 (1.5 * 3)
+            } else if (skillType === 'ultimate') { 
+                const meteorRadius = tileSize * 4.5;
                 const targetX = player.x + player.width / 2;
                 const targetY = player.y + player.height / 2;
 
@@ -889,39 +889,39 @@ function useSkill(skillType) {
                     height: meteorRadius * 2,
                     alpha: 0.8,
                     createdAt: Date.now(),
-                    duration: 500, // 짧은 공격 지속 시간
+                    duration: 500,
                     hitMonsters: [],
-                    damage: player.attack + skill.damage,
+                    damage: baseDamage + skill.damage,
+                    damageType: skill.damageType,
                     isSkill: true,
-                    color: 'rgba(255, 69, 0, 0.8)', // 주황색
+                    color: 'rgba(255, 69, 0, 0.8)',
                     isCircular: true
                 };
 
-                // 지면 효과 추가
                 activeGroundEffects.push({
                     x: targetX,
                     y: targetY,
                     radius: meteorRadius,
-                    duration: 10000, // 10초 지속
+                    duration: 10000,
                     createdAt: Date.now(),
-                    color: 'rgba(128, 128, 128, 0.5)', // 회색
-                    damagePerSecond: 2, // 초당 2 데미지
+                    color: 'rgba(128, 128, 128, 0.5)',
+                    damagePerSecond: 2,
                     lastDamageTime: Date.now(),
-                    hitMonsters: [] // 장판에 맞은 몬스터 기록
+                    hitMonsters: [],
+                    damageType: skill.damageType
                 });
             }
         } else if (player.job === '성직자') {
-                if (skillType === 'weak') { // 힐
-                    // Handled by skill.heal, no attack object needed
-                } else if (skillType === 'strong') { // 홀리아머
+                if (skillType === 'weak') { 
+                } else if (skillType === 'strong') { 
                     player.buffs.push({
                         type: 'holyArmor',
                         duration: skill.duration,
                         createdAt: Date.now(),
                         damageReduction: skill.damageReduction
                     });
-                } else if (skillType === 'ultimate') { // 홀리라이트
-                    const holyLightRadius = tileSize * 4.5; // 메테오와 같은 범위
+                } else if (skillType === 'ultimate') { 
+                    const holyLightRadius = tileSize * 4.5;
                     const targetX = player.x + player.width / 2;
                     const targetY = player.y + player.height / 2;
 
@@ -932,30 +932,30 @@ function useSkill(skillType) {
                         height: holyLightRadius * 2,
                         alpha: 0.8,
                         createdAt: Date.now(),
-                        duration: 500, // 짧은 공격 지속 시간
+                        duration: 500,
                         hitMonsters: [],
-                        damage: player.attack + skill.damage,
+                        damage: baseDamage + skill.damage,
+                        damageType: skill.damageType,
                         isSkill: true,
-                        color: 'rgba(255, 255, 150, 0.8)', // 연노랑색
+                        color: 'rgba(255, 255, 150, 0.8)',
                         isCircular: true
                     };
 
-                    // 지면 효과 추가
                     activeGroundEffects.push({
                         x: targetX,
                         y: targetY,
                         radius: holyLightRadius,
-                        duration: 5000, // 5초 지속
+                        duration: 5000,
                         createdAt: Date.now(),
-                        color: 'rgba(255, 255, 150, 0.5)', // 연노랑색
-                        damagePerSecond: 2, // 초당 2 데미지
-                        dotDuration: 3000, // 3초간 도트 데미지
+                        color: 'rgba(255, 255, 150, 0.5)',
+                        damagePerSecond: 2,
+                        dotDuration: 3000,
                         lastDamageTime: Date.now(),
-                        hitMonsters: [] // 장판에 맞은 몬스터 기록
+                        hitMonsters: []
                     });
                 }
             } else if (player.job === '도적') {
-                if (skillType === 'weak') { // 단검던지기
+                if (skillType === 'weak') { 
                     const projectileSpeed = 15;
                     let dx = 0, dy = 0;
                     switch (player.lastDirection) {
@@ -971,26 +971,26 @@ function useSkill(skillType) {
                         height: 10,
                         alpha: 1,
                         createdAt: Date.now(),
-                        duration: 3000, // 3초 지속
-                        hitMonsters: [], // 관통이므로 hitMonsters는 사용하지 않음
-                        damage: player.attack + skill.damage,
+                        duration: 3000,
+                        hitMonsters: [],
+                        damage: baseDamage + skill.damage,
+                        damageType: skill.damageType,
                         isSkill: true,
                         color: 'silver',
                         isProjectile: true,
                         dx: dx,
                         dy: dy,
-                        rotation: 0, // 초기 회전 각도
-                        rotationSpeed: 360 / 3000, // 3초에 360도 회전 (ms당 각도)
+                        rotation: 0,
+                        rotationSpeed: 360 / 3000,
                         piercing: true
                     };
-                } else if (skillType === 'strong') { // 은신
-                    player.buffs.push({
-                        type: 'stealth',
-                        duration: skill.duration,
-                        createdAt: Date.now()
-                    });
-                } else if (skillType === 'ultimate') { // 암살
-                    // Find closest monster
+                } else if (skillType === 'strong') { 
+                    if (player.isStealthed) return; // Prevent re-stealthing while already stealthed
+                    player.isStealthed = true;
+                    setTimeout(() => {
+                        player.isStealthed = false;
+                    }, skill.duration);
+                } else if (skillType === 'ultimate') { 
                     let closestMonster = null;
                     let minDistance = Infinity;
                     monsters.forEach(m => {
@@ -1011,50 +1011,52 @@ function useSkill(skillType) {
                             createdAt: Date.now(),
                             duration: 150,
                             hitMonsters: [],
-                            damage: player.attack + skill.damage,
+                            damage: baseDamage + skill.damage,
+                            damageType: skill.damageType,
                             isSkill: true,
-                            color: 'rgba(50, 50, 50, 0.9)' // 어두운 색
+                            color: 'rgba(50, 50, 50, 0.9)'
                         };
                     } else {
-                        // No monster to hit, refund mana and cooldown
                         player.mana += skill.manaCost;
                         player.skillCooldowns[skillType] = 0;
                         return;
                     }
                 }
             }
-        activeAttacks.push(attack);
+        if (Object.keys(attack).length > 0) {
+            activeAttacks.push(attack);
+        }
     }
 }
 
 function interactWithNpc(npc) {
-    if (npc.name === '상인') openShop();
-    else if (npc.name === '전직관') {
-        if (player.job !== '무직') alert("이미 직업이 있습니다.");
-        else if (player.level < 3) alert("레벨 3 이상만 전직할 수 있습니다.");
-        else if (player.gold < 50) alert("전직하려면 50골드가 필요합니다.");
+    if (npc.name === 'merchant') openShop();
+    else if (npc.name === 'job_master') {
+        if (player.job !== 'no_job') alert(getTranslation('already_have_job'));
+        else if (player.level < 3) alert(getTranslation('need_level_3_for_job'));
+        else if (player.gold < 50) alert(getTranslation('need_50_gold_for_job'));
         else {
             player.gold -= 50;
             const newJob = jobs[Math.floor(Math.random() * jobs.length)];
             player.job = newJob;
             switch (newJob) {
-                case '검사': player.maxMana = 50; break;
-                case '마법사': player.maxMana = 200; break;
-                case '성직자': player.maxMana = 150; break;
-                case '도적': player.maxMana = 100; break;
+                case 'warrior': player.maxMana = 50; break;
+                case 'mage': player.maxMana = 200; break;
+                case 'priest': player.maxMana = 150; break;
+                case 'thief': player.maxMana = 100; break;
             }
-            player.mana = player.maxMana; // 전직 시 마나 채워주기
-            alert(`전직 완료! 당신은 이제 '${player.job}'입니다!`);
+            player.mana = player.maxMana;
+            alert(getTranslation('job_change_complete', { job: getTranslation(newJob) }));
         }
-    } else if (npc.name === '삭제관') {
-        if (player.job === '무직') alert("현재 직업이 없습니다.");
-        else if (player.gold < 50) alert("직업을 초기화하려면 50골드가 필요합니다.");
-        else if (confirm(`정말로 50골드를 지불하고 직업을 초기화하시겠습니까?`)) {
+    } else if (npc.name === 'reset_master') {
+        if (player.job === 'no_job') alert(getTranslation('no_job'));
+        else if (player.gold < 50) alert(getTranslation('need_50_gold_for_job'));
+        else if (confirm(getTranslation('job_reset_confirm'))) {
             player.gold -= 50;
-            player.job = '무직';
-            alert("직업이 초기화되었습니다.");
+            player.job = 'no_job';
+            alert(getTranslation('job_reset_complete'));
         }
-    } else if (npc.name === '스킬관') {
+    } else if (npc.name === 'skill_master') {
         openSkillModal();
     }
 }
@@ -1068,23 +1070,21 @@ function isNear(rect1, rect2, distance) {
     return Math.sqrt(dx * dx + dy * dy) < (rect1.width / 2 + rect2.width / 2 + distance);
 }
 
-// --- Potion Modal ---
 const potionModal = document.getElementById('potion-modal');
 const potionList = document.getElementById('potion-list');
 const closePotionBtn = document.getElementById('close-potion-btn');
 
 function openPotionModal() {
-    // Check if player has any HP or Mana potions
     const hasAnyPotion = shopItems.some(item => 
         (item.type === 'hp' || item.type === 'mana') && player.inventory[item.id] > 0
     );
 
     if (!hasAnyPotion) {
-        alert("보유한 물약이 없습니다.");
+        alert(getTranslation('no_potions'));
         return;
     }
     if (player.hp === player.maxHp && player.mana === player.maxMana) {
-        alert("HP와 마나가 모두 가득 찼습니다!");
+        alert(getTranslation('hp_and_mana_full'));
         return;
     }
     gamePaused = true;
@@ -1099,22 +1099,22 @@ function closePotionModal() {
 
 function usePotion(potionId) {
     const item = shopItems.find(i => i.id === potionId);
-    if (!item) return; // Item not found in shopItems
+    if (!item) return;
 
     if (player.inventory[potionId] <= 0) {
-        alert("보유한 물약이 없습니다!");
+        alert(getTranslation('no_potions'));
         return;
     }
 
     if (item.type === 'hp') {
         if (player.hp === player.maxHp) {
-            alert("HP가 이미 가득 찼습니다!");
+            alert(getTranslation('hp_full'));
             return;
         }
         player.hp = Math.min(player.maxHp, player.hp + item.heal);
     } else if (item.type === 'mana') {
         if (player.mana === player.maxMana) {
-            alert("마나가 이미 가득 찼습니다!");
+            alert(getTranslation('mana_full'));
             return;
         }
         player.mana = Math.min(player.maxMana, player.mana + item.heal);
@@ -1122,43 +1122,40 @@ function usePotion(potionId) {
 
     player.inventory[potionId]--;
     savePlayerState(currentUser);
-    populatePotionList(); // Refresh list after use
-    // Always close the modal after an action
+    populatePotionList();
     closePotionModal();
 }
 
 function populatePotionList() {
     potionList.innerHTML = '';
-    // Filter shopItems to only include potions and check if player has them
     const availablePotions = shopItems.filter(item => 
         (item.type === 'hp' || item.type === 'mana') && player.inventory[item.id] > 0
     );
 
     if (availablePotions.length === 0) {
-        potionList.innerHTML = '<p>보유한 물약이 없습니다.</p>';
+        potionList.innerHTML = `<p>${getTranslation('no_potions')}</p>`;
         return;
     }
 
     availablePotions.forEach(item => {
         const potionItem = document.createElement('div');
         potionItem.className = 'potion-item';
-        potionItem.innerHTML = `<span>${item.name} (${player.inventory[item.id]}개) - ${item.type === 'hp' ? 'HP' : '마나'} ${item.heal} 회복</span>`;
+        potionItem.innerHTML = `<span>${item.name} (${player.inventory[item.id]}) - ${item.type === 'hp' ? 'HP' : 'Mana'} ${item.heal}</span>`;
         const useBtn = document.createElement('button');
-        useBtn.textContent = '사용';
+        useBtn.textContent = getTranslation('use');
         useBtn.onclick = () => usePotion(item.id);
         potionItem.appendChild(useBtn);
         potionList.appendChild(potionItem);
     });
 }
 
-// --- Skill Modal ---
 const skillModal = document.getElementById('skill-modal');
 const skillList = document.getElementById('skill-list');
 const closeSkillBtn = document.getElementById('close-skill-btn');
 
 function openSkillModal() {
-    if (player.job === '무직') {
-        alert('먼저 전직을 해야 스킬을 배울 수 있습니다.');
+    if (player.job === 'no_job') {
+        alert(getTranslation('need_job_for_skill'));
         return;
     }
     gamePaused = true;
@@ -1173,58 +1170,55 @@ function closeSkillModal() {
 
 function learnSkill(skillType, skill) {
     if (player.gold < skill.manaCost) {
-        alert('골드가 부족합니다.');
+        alert(getTranslation('not_enough_gold'));
         return;
     }
 
     if (player.skills[skillType]) {
-        alert('이미 해당 종류의 스킬을 배웠습니다.');
+        alert(getTranslation('already_learned_skill'));
         return;
     }
 
     player.gold -= skill.manaCost;
     player.skills[skillType] = skill;
-    alert(`'${skill.name}' 스킬을 배웠습니다!`);
+    alert(getTranslation('skill_learned', { skillName: skill.name }));
     savePlayerState(currentUser);
-    populateSkillList(); // Refresh the list to update button states
+    populateSkillList();
 }
 
 function populateSkillList() {
     skillList.innerHTML = '';
-    const jobSkills = skills[player.job];
+    const jobSkills = skills[getTranslation(player.job)];
     if (!jobSkills) return;
 
-    for (const skillType in jobSkills) { // weak, strong, ultimate
+    for (const skillType in jobSkills) {
         const skill = jobSkills[skillType];
         const skillItem = document.createElement('div');
         skillItem.className = 'skill-item';
 
         let buttonHtml;
         if (player.skills[skillType] && player.skills[skillType].name === skill.name) {
-            buttonHtml = '<button class="learn-btn" disabled>보유중</button>';
+            buttonHtml = `<button class="learn-btn" disabled>${getTranslation('in_possession')}</button>`;
         } else {
-            buttonHtml = `<button class="learn-btn" onclick="learnSkill('${skillType}', skills['${player.job}']['${skillType}'])">배우기 (${skill.manaCost}G)</button>`;
+            buttonHtml = `<button class="learn-btn" onclick="learnSkill('${skillType}', skills['${getTranslation(player.job)}']['${skillType}'])">${getTranslation('learn')} (${skill.manaCost}G)</button>`;
         }
 
         skillItem.innerHTML = `
-            <h3>${skill.name} (${actionTranslations[skillType]})</h3>
+            <h3>${skill.name} (${getTranslation(actionTranslations[skillType])})</h3>
             <p>${skill.description}</p>
-            <p>데미지: ${skill.damage || 0} / 힐: ${skill.heal || 0} / 쿨타임: ${skill.cooldown / 1000}초</p>
+            <p>Damage: ${skill.damage || 0} / Heal: ${skill.heal || 0} / Cooldown: ${skill.cooldown / 1000}s</p>
             ${buttonHtml}
         `;
         skillList.appendChild(skillItem);
     }
 }
 
-
-// --- 상태 저장/복원 ---
 function savePlayerState() { localStorage.setItem('playerState', JSON.stringify(player)); }
 function loadPlayerState() {
     const saved = localStorage.getItem('playerState');
     if (saved) {
         const savedPlayer = JSON.parse(saved);
         if (savedPlayer.hp <= 0) {
-            // Reset player if dead
             player.hp = player.maxHp;
             player.x = (maps.overworld.layout[0].length / 2) * tileSize;
             player.y = (maps.overworld.layout.length / 2) * tileSize;
@@ -1245,8 +1239,15 @@ function loadKeyMap() {
     }
 }
 
+function updateUIText() {
+    document.getElementById('settings-button').textContent = getTranslation('settings');
+    document.querySelector('#settings-modal h2').textContent = getTranslation('settings');
+    document.querySelector('#potion-modal h2').textContent = getTranslation('potions');
+    document.querySelector('#skill-modal h2').textContent = 'Skills'; // TODO: Add to languages.js
+    document.querySelector('#shop-modal h2').textContent = getTranslation('merchant');
+    populateKeybindList();
+}
 
-// --- 게임 루프 및 시작 ---
 function gameLoop() {
     if (!gamePaused) {
         update();
@@ -1264,6 +1265,7 @@ function init() {
     createOverworldBackground();
     spawnMonsters();
     gameLoop();
+    updateUIText(); 
 }
 
 function startGame() {
@@ -1279,15 +1281,20 @@ function startGame() {
     }
 }
 
-// --- Settings Modal ---
 const settingsButton = document.getElementById('settings-button');
 const settingsModal = document.getElementById('settings-modal');
 const closeSettingsBtn = document.getElementById('close-settings-btn');
 const keybindList = document.getElementById('keybind-list');
+const languageSelect = document.getElementById('language-select');
+
+languageSelect.addEventListener('change', (e) => {
+    currentLanguage = e.target.value;
+    updateUIText();
+});
 
 function openSettingsModal() {
     populateKeybindList();
-    settingsModal.style.display = 'flex'; // Use flex to center the content
+    settingsModal.style.display = 'flex';
 }
 
 function closeSettingsModal() {
@@ -1299,18 +1306,17 @@ function populateKeybindList() {
     keybindList.innerHTML = '';
     for (const action in keyMap) {
         const div = document.createElement('div');
-        div.innerHTML = `<span>${actionTranslations[action]}: </span><button class="keybind-button" data-action="${action}">${getKeyDisplayName(keyMap[action])}</button>`;
+        div.innerHTML = `<span>${getTranslation(actionTranslations[action])}: </span><button class="keybind-button" data-action="${action}">${getKeyDisplayName(keyMap[action])}</button>`;
         keybindList.appendChild(div);
     }
     document.querySelectorAll('.keybind-button').forEach(button => {
         button.addEventListener('click', (e) => {
-            if (changingKeyFor) return; // Prevent starting a new change if one is in progress
+            if (changingKeyFor) return;
             changingKeyFor = e.target.dataset.action;
             e.target.textContent = '...';
         });
     });
 }
-
 
 window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('start-button').addEventListener('click', startGame);

@@ -10,30 +10,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function registerUser(username, password) {
         if (!username || !password) {
-            alert('사용자 이름과 비밀번호를 모두 입력해주세요.');
+            alert(getTranslation('enter_username_password'));
             return;
         }
 
         const users = JSON.parse(localStorage.getItem('users')) || {};
         if (users[username]) {
-            alert('이미 존재하는 사용자 이름입니다.');
+            alert(getTranslation('username_exists'));
             return;
         }
 
         users[username] = { password: password };
         localStorage.setItem('users', JSON.stringify(users));
-        alert('회원가입이 완료되었습니다. 이제 로그인해주세요.');
+        alert(getTranslation('register_success'));
     }
 
     function loginUser(username, password) {
         if (!username || !password) {
-            alert('사용자 이름과 비밀번호를 모두 입력해주세요.');
+            alert(getTranslation('enter_username_password'));
             return;
         }
 
         const users = JSON.parse(localStorage.getItem('users')) || {};
         if (!users[username] || users[username].password !== password) {
-            alert('사용자 이름 또는 비밀번호가 올바르지 않습니다.');
+            alert(getTranslation('login_fail'));
             return;
         }
 

@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>${item.name}</span>
                     <small>${item.description}</small>
                 </div>
-                <button class="buy-btn" data-item-id="${item.id}">${item.price} 골드</button>
+                <button class="buy-btn" data-item-id="${item.id}">${item.price} ${getTranslation('gold')}</button>
             `;
             itemListEl.appendChild(itemDiv);
         });
@@ -33,34 +33,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!item || typeof player === 'undefined') return;
 
         if (player.gold < item.price) {
-            alert("골드가 부족합니다.");
+            alert(getTranslation('not_enough_gold'));
             return;
         }
 
-        // Handle weapons
         if (item.job) {
-            // Check if player already has a weapon for this job
             const currentWeapon = Object.keys(player.inventory).find(key => shopItems.find(si => si.id === key && si.job === player.job));
             if (currentWeapon) {
-                alert("이미 해당 직업의 무기를 소지하고 있습니다. 먼저 판매하거나 다른 무기를 선택하세요.");
+                alert(getTranslation('already_have_weapon'));
                 return;
             }
             if (player.job !== item.job) {
-                alert("이 아이템은 '" + item.job + "' 직업만 구매할 수 있습니다.");
+                alert(getTranslation('job_restricted_item', { job: item.job }));
                 return;
             }
             player.gold -= item.price;
-            player.inventory[item.id] = 1; // Assume only one weapon of each type
-            player.attack += item.attack; // Add weapon's attack to player's base attack
-            alert(`${item.name}을(를) 구매했습니다! 공격력이 ${item.attack} 증가했습니다.`);
+            player.inventory[item.id] = 1;
+            player.attack += item.attack;
+            alert(getTranslation('item_purchased_attack_increase', { itemName: item.name, attack: item.attack }));
         } 
-        // Handle potions
         else if (item.type === 'hp' || item.type === 'mana') {
             player.gold -= item.price;
             player.inventory[item.id] = (player.inventory[item.id] || 0) + 1;
-            alert(`${item.name}을(를) 구매했습니다!`);
+            alert(getTranslation('item_purchased', { itemName: item.name }));
         }
-        savePlayerState(); // Save player state after purchase
+        savePlayerState();
         updateShopUI();
     }
 
@@ -69,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderItems();
     }
 
-    // game.js에서 호출할 수 있도록 window 객체에 함수를 할당합니다.
     window.openShop = () => {
         if (typeof gamePaused !== 'undefined') gamePaused = true;
         shopModal.style.display = 'flex';

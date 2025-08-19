@@ -34,6 +34,15 @@
         <div class="modal-content">
             <span id="close-settings-btn" class="close-btn">&times;</span>
             <h2>설정</h2>
+            <div class="setting-item">
+                <label for="language-select">언어:</label>
+                <select id="language-select">
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    
+                    <option value="ja">日本語</option>
+                </select>
+            </div>
             <div id="keybind-list"></div>
         </div>
     </div>
@@ -64,6 +73,7 @@
         </div>
     </div>
 
+    <script src="languages.js"></script>
     <script src="data.js"></script>
     <script src="auth.js"></script>
     <script src="shop.js"></script>
