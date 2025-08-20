@@ -75,6 +75,7 @@ const languages = {
         'left_click': '좌클릭',
         'right_click': '우클릭',
         'key_in_use': '이미 사용 중인 키입니다!',
+        'already_in_town': '이미 마을에 있습니다.',
     },
     en: {
         // Auth
@@ -152,6 +153,7 @@ const languages = {
         'left_click': 'Left Click',
         'right_click': 'Right Click',
         'key_in_use': 'That key is already in use!',
+        'already_in_town': 'You are already in town.',
     },
     ja: {
         // Auth
@@ -229,5 +231,6 @@ const languages = {
         'left_click': '左クリック',
         'right_click': '右クリック',
         'key_in_use': 'そのキーは既に使用されています！',
+        'already_in_town': 'すでに町にいます。',
     }
 };

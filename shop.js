@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             if (player.job !== item.job) {
-                alert(getTranslation('job_restricted_item', { job: item.job }));
+                alert(getTranslation('job_restricted_item', { job: getTranslation(item.job) }));
                 return;
             }
             player.gold -= item.price;

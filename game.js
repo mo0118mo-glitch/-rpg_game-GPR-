@@ -76,7 +76,10 @@ const player = {
     returnPos: { x: 0, y: 0 }, // 던전에서 돌아올 위치
     skills: { weak: null, strong: null, ultimate: null },
     skillCooldowns: { weak: 0, strong: 0, ultimate: 0 },
-    buffs: []
+    buffs: [],
+    isReturning: false,
+    returnTimer: 0,
+    returnEffect: null
 };
 
 let monsters = [];
@@ -384,6 +387,26 @@ function draw() {
         });
     }
 
+    // Draw return effect if active
+    if (player.isReturning && player.returnEffect) {
+        const effect = player.returnEffect;
+        ctx.save();
+        ctx.globalAlpha = effect.alpha;
+        ctx.fillStyle = effect.color;
+        ctx.beginPath();
+        // Draw ellipse: ctx.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle)
+        ctx.ellipse(effect.x, effect.y, effect.width / 2, effect.height / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Draw countdown timer
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.font = '24px Arial';
+        const timeLeft = (player.returnTimer / 1000).toFixed(1);
+        ctx.fillText(timeLeft, player.x + player.width / 2, player.y - 30);
+    }
+
     if (player.isStealthed) {
         ctx.globalAlpha = 0.5;
     }
@@ -508,6 +531,26 @@ function spawnMonsters() {
 function update() {
     if (gamePaused) return;
     const now = Date.now();
+
+    if (player.isReturning) {
+        player.returnTimer -= 16; // Decrement by game loop interval (approx 16ms)
+        if (player.returnTimer <= 0) {
+            player.isReturning = false;
+            player.returnEffect = null; // Clear the effect
+            // Teleport to overworld center
+            player.x = (maps.overworld.layout[0].length / 2) * tileSize;
+            player.y = (maps.overworld.layout.length / 2) * tileSize;
+            currentMapId = 'overworld';
+            spawnMonsters(); // Respawns monsters in the new map
+        } else {
+            // Update effect position to follow player
+            if (player.returnEffect) {
+                player.returnEffect.x = player.x + player.width / 2;
+                player.returnEffect.y = player.y + player.height / 2;
+                player.returnEffect.alpha = 0.7 * (player.returnTimer / 1000); // Fade out
+            }
+        }
+    }
 
     if (player.attackCooldown > 0) player.attackCooldown -= 16;
     for (const type in player.skillCooldowns) {
@@ -713,6 +756,27 @@ function handlePlayerAttack() {
     }
     activeAttacks.push(attack);
     player.ultimateGauge = Math.min(player.maxUltimateGauge, player.ultimateGauge + 1);
+}
+
+function startReturnToTown() {
+    if (player.isReturning) return; // Prevent multiple activations
+    if (currentMapId === 'overworld') { // Already in town
+        alert(getTranslation('already_in_town')); // Need to add this translation
+        return;
+    }
+
+    player.isReturning = true;
+    player.returnTimer = 1000; // 1 second countdown
+    player.returnEffect = {
+        x: player.x + player.width / 2,
+        y: player.y + player.height / 2,
+        width: player.width * 0.8, // Ellipse width
+        height: player.height * 2, // Ellipse height (long vertically)
+        color: 'rgba(128, 0, 128, 0.7)', // Purple with some transparency
+        createdAt: Date.now(),
+        duration: 1000, // Duration of the effect
+        alpha: 0.7 // Initial alpha
+    };
 }
 
 function useSkill(skillType) {
@@ -1056,6 +1120,13 @@ function interactWithNpc(npc) {
         else if (confirm(getTranslation('job_reset_confirm'))) {
             player.gold -= 50;
             player.job = 'no_job';
+            player.skills = { weak: null, strong: null, ultimate: null };
+            // Reset job-specific items in inventory
+            shopItems.forEach(item => {
+                if (item.job && player.inventory[item.id] > 0) {
+                    player.inventory[item.id] = 0;
+                }
+            });
             alert(getTranslation('job_reset_complete'));
         }
     } else if (npc.name === 'skill_master') {
@@ -1171,7 +1242,7 @@ function closeSkillModal() {
 }
 
 function learnSkill(skillType, skill) {
-    if (player.gold < skill.manaCost) {
+    if (player.gold < skill.manaCost * 100) {
         alert(getTranslation('not_enough_gold'));
         return;
     }
@@ -1181,7 +1252,7 @@ function learnSkill(skillType, skill) {
         return;
     }
 
-    player.gold -= skill.manaCost;
+    player.gold -= skill.manaCost * 100;
     player.skills[skillType] = skill;
     alert(getTranslation('skill_learned', { skillName: skill.name }));
     savePlayerState(currentUser);
@@ -1190,7 +1261,7 @@ function learnSkill(skillType, skill) {
 
 function populateSkillList() {
     skillList.innerHTML = '';
-    const jobSkills = skills[getTranslation(player.job)];
+    const jobSkills = skills[player.job];
     if (!jobSkills) return;
 
     for (const skillType in jobSkills) {
@@ -1202,7 +1273,7 @@ function populateSkillList() {
         if (player.skills[skillType] && player.skills[skillType].name === skill.name) {
             buttonHtml = `<button class="learn-btn" disabled>${getTranslation('in_possession')}</button>`;
         } else {
-            buttonHtml = `<button class="learn-btn" onclick="learnSkill('${skillType}', skills['${getTranslation(player.job)}']['${skillType}'])">${getTranslation('learn')} (${skill.manaCost}G)</button>`;
+            buttonHtml = `<button class="learn-btn" onclick="learnSkill('${skillType}', skills['${player.job}']['${skillType}'])">${getTranslation('learn')} (${skill.manaCost * 100}G)</button>`;
         }
 
         skillItem.innerHTML = `
@@ -1221,13 +1292,6 @@ function loadPlayerState() {
     const saved = localStorage.getItem('playerState');
     if (saved) {
         const savedPlayer = JSON.parse(saved);
-        if (savedPlayer.hp <= 0) {
-            player.hp = player.maxHp;
-            player.x = (maps.overworld.layout[0].length / 2) * tileSize;
-            player.y = (maps.overworld.layout.length / 2) * tileSize;
-            currentMapId = 'overworld';
-            return;
-        }
         Object.assign(player, savedPlayer);
         player.isStealthed = false; // 불러올 때 은신 상태 초기화
     }
@@ -1264,9 +1328,16 @@ function gameLoop() {
 function init() {
     currentUser = sessionStorage.getItem('currentUser');
     loadKeyMap();
+    loadPlayerState(currentUser); // Load saved state first
+
+    if (player.hp <= 0) {
+        player.hp = player.maxHp;
+    }
+
+    // Now, explicitly set player position to village, overriding saved position if it exists
     player.x = (maps.overworld.layout[0].length / 2) * tileSize;
     player.y = (maps.overworld.layout.length / 2) * tileSize;
-    loadPlayerState(currentUser);
+    currentMapId = 'overworld'; // Ensure map is overworld
     createOverworldBackground();
     spawnMonsters();
     gameLoop();
@@ -1329,6 +1400,7 @@ window.addEventListener('DOMContentLoaded', () => {
     closeSettingsBtn.addEventListener('click', closeSettingsModal);
     closePotionBtn.addEventListener('click', closePotionModal);
     closeSkillBtn.addEventListener('click', closeSkillModal);
+    document.getElementById('return-to-town-button').addEventListener('click', startReturnToTown); // New line
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
