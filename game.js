@@ -740,7 +740,7 @@ function update() {
         }
     }
     
-    savePlayerState();
+    savePlayerState(currentUser);
 }
 
 function handlePlayerAttack() {
@@ -820,7 +820,7 @@ function useSkill(skillType) {
             baseDamage = player.magicAttack;
         }
 
-        if (player.job === '검사') {
+        if (player.job === 'warrior') {
             if (skillType === 'weak') { 
                 attack = {
                     x: player.x + player.width / 2 - baseAttackSize * 1.5,
@@ -890,7 +890,7 @@ function useSkill(skillType) {
                     damageType: skill.damageType
                 };
             }
-        } else if (player.job === '마법사') {
+        } else if (player.job === 'mage') {
             if (skillType === 'weak') { 
                 const projectileSpeed = 10;
                 let dx = 0, dy = 0;
@@ -977,7 +977,7 @@ function useSkill(skillType) {
                     damageType: skill.damageType
                 });
             }
-        } else if (player.job === '성직자') {
+        } else if (player.job === 'priest') {
                 if (skillType === 'weak') { 
                 } else if (skillType === 'strong') { 
                     player.buffs.push({
@@ -1020,7 +1020,7 @@ function useSkill(skillType) {
                         hitMonsters: []
                     });
                 }
-            } else if (player.job === '도적') {
+            } else if (player.job === 'thief') {
                 if (skillType === 'weak') { 
                     const projectileSpeed = 15;
                     let dx = 0, dy = 0;
@@ -1286,10 +1286,14 @@ function populateSkillList() {
     }
 }
 
-function savePlayerState() { localStorage.setItem('playerState', JSON.stringify(player)); }
+function savePlayerState(currentUser) { 
+    if (!currentUser) return;
+    localStorage.setItem(`playerState_${currentUser}`, JSON.stringify(player)); 
+}
 
-function loadPlayerState() {
-    const saved = localStorage.getItem('playerState');
+function loadPlayerState(currentUser) {
+    if (!currentUser) return;
+    const saved = localStorage.getItem(`playerState_${currentUser}`);
     if (saved) {
         const savedPlayer = JSON.parse(saved);
         Object.assign(player, savedPlayer);
