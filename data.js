@@ -1,4 +1,4 @@
-const jobs = ['warrior', 'mage', 'priest', 'thief'];
+const jobs = ['warrior', 'mage', 'priest', 'thief', 'gunslinger'];
 
 const initialMonsters = {
     slime: { id: 1, name: '슬라임', width: 32, height: 32, color: 'red', hp: 6, maxHp: 6, attack: 5, gold: 10, speed: 1, detectionRange: 200, exp: 3, lastDirection: 'down' },
@@ -32,6 +32,11 @@ const skills = {
         weak: { name: '단검던지기', manaCost: 7, damage: 3, cooldown: 5000, description: '적을 관통하는 단검을 던져 3의 물리 데미지를 줍니다.', damageType: 'physical' },
         strong: { name: '은신', manaCost: 15, duration: 5000, cooldown: 10000, description: '5초간 몬스터에게 어그로가 끌리지 않습니다.' },
         ultimate: { name: '암살', manaCost: 30, damage: 30, cooldown: 0, description: '단일 대상에게 30의 치명적인 물리 데미지를 입힙니다.', damageType: 'physical' }
+    },
+    'gunslinger': {
+        weak: { name: '더블 탭', manaCost: 0, damage: 4, cooldown: 4000, description: '빠르게 2발을 발사합니다.', damageType: 'physical' },
+        strong: { name: '헤드샷', manaCost: 0, damage: 12, cooldown: 10000, description: '강력한 한 발을 발사합니다.', damageType: 'physical' },
+        ultimate: { name: '난사', manaCost: 0, duration: 5000, cooldown: 0, description: '5초간 전방으로 자동 사격합니다.', damageType: 'physical' }
     }
 };
 

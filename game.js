@@ -89,6 +89,7 @@ const activeAttacks = [];
 const activeGroundEffects = [];
 const camera = { x: 0, y: 0, width: canvas.width, height: canvas.height };
 let backgroundCanvas = null; // 오버월드 배경용
+let isekaiNpc = null;
 
 function createMap(cols, rows, wallProbability = 0) {
     const map = [];
@@ -529,6 +530,44 @@ function spawnMonsters() {
     });
 }
 
+function spawnIsekaiNpc() {
+    if (isekaiNpc) return; // Don't spawn if already present
+
+    const map = maps.overworld;
+    let placed = false;
+    let x, y;
+
+    while (!placed) {
+        x = Math.floor(Math.random() * map.layout[0].length) * tileSize;
+        y = Math.floor(Math.random() * map.layout.length) * tileSize;
+        const tileX = Math.floor(x / tileSize);
+        const tileY = Math.floor(y / tileSize);
+        if (map.layout[tileY][tileX] === 0) {
+            placed = true;
+        }
+    }
+
+    isekaiNpc = {
+        id: 99, // Unique ID
+        name: '이세카이',
+        x: x,
+        y: y,
+        width: 32,
+        height: 32,
+        color: 'magenta',
+        lastDirection: 'down'
+    };
+    maps.overworld.npcs.push(isekaiNpc);
+
+    setTimeout(despawnIsekaiNpc, 60000); // Despawn after 1 minute
+}
+
+function despawnIsekaiNpc() {
+    if (!isekaiNpc) return;
+    maps.overworld.npcs = maps.overworld.npcs.filter(npc => npc.id !== isekaiNpc.id);
+    isekaiNpc = null;
+}
+
 function update() {
     if (gamePaused) return;
     const now = Date.now();
@@ -746,16 +785,44 @@ function update() {
 
 function handlePlayerAttack() {
     if (player.attackCooldown > 0) return;
-    player.attackCooldown = 500;
-    const attackRange = 100, attackSize = 30;
-    let attack = { x: player.x + player.width / 2 - attackSize / 2, y: player.y + player.height / 2 - attackSize / 2, width: attackSize, height: attackSize, alpha: 0.5, createdAt: Date.now(), duration: 200, damage: player.physicalAttack, damageType: 'physical', hitMonsters: [] };
-    switch (player.lastDirection) {
-        case 'up': attack.y -= attackRange / 2; attack.width = attackSize * 2; attack.height = attackRange; break;
-        case 'down': attack.y += attackRange / 2; attack.width = attackSize * 2; attack.height = attackRange; break;
-        case 'left': attack.x -= attackRange / 2; attack.width = attackRange; attack.height = attackSize * 2; break;
-        case 'right': attack.x += attackRange / 2; attack.width = attackRange; attack.height = attackSize * 2; break;
+
+    if (player.job === 'gunslinger') {
+        player.attackCooldown = 1000; // 1 second cooldown
+        const projectileSpeed = 10;
+        let dx = 0, dy = 0;
+        switch (player.lastDirection) {
+            case 'up': dy = -projectileSpeed; break;
+            case 'down': dy = projectileSpeed; break;
+            case 'left': dx = -projectileSpeed; break;
+            case 'right': dx = projectileSpeed; break;
+        }
+        activeAttacks.push({
+            x: player.x + player.width / 2 - 15,
+            y: player.y + player.height / 2 - 5,
+            width: 30,
+            height: 10,
+            color: 'white',
+            damage: 4,
+            damageType: 'physical',
+            isProjectile: true,
+            dx: dx,
+            dy: dy,
+            duration: 1000,
+            hitMonsters: [],
+            createdAt: Date.now()
+        });
+    } else {
+        player.attackCooldown = 500;
+        const attackRange = 100, attackSize = 30;
+        let attack = { x: player.x + player.width / 2 - attackSize / 2, y: player.y + player.height / 2 - attackSize / 2, width: attackSize, height: attackSize, alpha: 0.5, createdAt: Date.now(), duration: 200, damage: player.physicalAttack, damageType: 'physical', hitMonsters: [] };
+        switch (player.lastDirection) {
+            case 'up': attack.y -= attackRange / 2; attack.width = attackSize * 2; attack.height = attackRange; break;
+            case 'down': attack.y += attackRange / 2; attack.width = attackSize * 2; attack.height = attackRange; break;
+            case 'left': attack.x -= attackRange / 2; attack.width = attackRange; attack.height = attackSize * 2; break;
+            case 'right': attack.x += attackRange / 2; attack.width = attackRange; attack.height = attackSize * 2; break;
+        }
+        activeAttacks.push(attack);
     }
-    activeAttacks.push(attack);
     player.ultimateGauge = Math.min(player.maxUltimateGauge, player.ultimateGauge + 1);
 }
 
@@ -784,9 +851,13 @@ function useSkill(skillType) {
     const skill = player.skills[skillType];
     if (!skill) return;
     if (player.skillCooldowns[skillType] > 0) return;
-    if (player.mana < skill.manaCost) {
-        alert(getTranslation('no_mana'));
-        return;
+
+    if (player.job !== 'gunslinger') {
+        if (player.mana < skill.manaCost) {
+            alert(getTranslation('no_mana'));
+            return;
+        }
+        player.mana -= skill.manaCost;
     }
 
     if (skillType === 'ultimate' && player.ultimateGauge < player.maxUltimateGauge) {
@@ -794,7 +865,6 @@ function useSkill(skillType) {
         return;
     }
 
-    player.mana -= skill.manaCost;
     player.skillCooldowns[skillType] = skill.cooldown;
 
     if (skillType === 'weak') {
@@ -1089,6 +1159,110 @@ function useSkill(skillType) {
                         return;
                     }
                 }
+            } else if (player.job === 'gunslinger') {
+                if (skillType === 'weak') {
+                    const projectileSpeed = 15;
+                    let dx = 0, dy = 0;
+                    switch (player.lastDirection) {
+                        case 'up': dy = -projectileSpeed; break;
+                        case 'down': dy = projectileSpeed; break;
+                        case 'left': dx = -projectileSpeed; break;
+                        case 'right': dx = projectileSpeed; break;
+                    }
+                    // Fire two projectiles
+                    activeAttacks.push({
+                        x: player.x + player.width / 2 - 15,
+                        y: player.y + player.height / 2 - 5,
+                        width: 30,
+                        height: 10,
+                        color: 'white',
+                        damage: 4,
+                        damageType: 'physical',
+                        isProjectile: true,
+                        dx: dx,
+                        dy: dy,
+                        duration: 1000,
+                        hitMonsters: [],
+                        createdAt: Date.now()
+                    });
+                    setTimeout(() => {
+                        activeAttacks.push({
+                            x: player.x + player.width / 2 - 15,
+                            y: player.y + player.height / 2 - 5,
+                            width: 30,
+                            height: 10,
+                            color: 'white',
+                            damage: 4,
+                            damageType: 'physical',
+                            isProjectile: true,
+                            dx: dx,
+                            dy: dy,
+                            duration: 1000,
+                            hitMonsters: [],
+                            createdAt: Date.now()
+                        });
+                    }, 100); // a small delay between the two shots
+                } else if (skillType === 'strong') {
+                    const projectileSpeed = 10;
+                    let dx = 0, dy = 0;
+                    switch (player.lastDirection) {
+                        case 'up': dy = -projectileSpeed; break;
+                        case 'down': dy = projectileSpeed; break;
+                        case 'left': dx = -projectileSpeed; break;
+                        case 'right': dx = projectileSpeed; break;
+                    }
+                    activeAttacks.push({
+                        x: player.x + player.width / 2 - 20,
+                        y: player.y + player.height / 2 - 10,
+                        width: 40,
+                        height: 20,
+                        color: 'red',
+                        damage: 12,
+                        damageType: 'physical',
+                        isProjectile: true,
+                        dx: dx,
+                        dy: dy,
+                        duration: 1000,
+                        hitMonsters: [],
+                        createdAt: Date.now()
+                    });
+                } else if (skillType === 'ultimate') {
+                    const ultimateDuration = 5000; // 5 seconds
+                    const fireInterval = 300; // 0.3 seconds
+                    const numShots = ultimateDuration / fireInterval;
+                    let shotCount = 0;
+
+                    const ultimateInterval = setInterval(() => {
+                        if (shotCount >= numShots) {
+                            clearInterval(ultimateInterval);
+                            return;
+                        }
+                        const projectileSpeed = 10;
+                        let dx = 0, dy = 0;
+                        switch (player.lastDirection) {
+                            case 'up': dy = -projectileSpeed; break;
+                            case 'down': dy = projectileSpeed; break;
+                            case 'left': dx = -projectileSpeed; break;
+                            case 'right': dx = projectileSpeed; break;
+                        }
+                        activeAttacks.push({
+                            x: player.x + player.width / 2 - 15,
+                            y: player.y + player.height / 2 - 5,
+                            width: 30,
+                            height: 10,
+                            color: 'white',
+                            damage: 4,
+                            damageType: 'physical',
+                            isProjectile: true,
+                            dx: dx,
+                            dy: dy,
+                            duration: 1000,
+                            hitMonsters: [],
+                            createdAt: Date.now()
+                        });
+                        shotCount++;
+                    }, fireInterval);
+                }
             }
         if (Object.keys(attack).length > 0) {
             activeAttacks.push(attack);
@@ -1097,31 +1271,51 @@ function useSkill(skillType) {
 }
 
 function interactWithNpc(npc) {
-    if (npc.name === 'merchant') openShop();
-    else if (npc.name === 'job_master') {
-        if (player.job !== 'no_job') alert(getTranslation('already_have_job'));
-        else if (player.level < 3) alert(getTranslation('need_level_3_for_job'));
-        else if (player.gold < 50) alert(getTranslation('need_50_gold_for_job'));
-        else {
+    if (npc.name === 'merchant') {
+        openShop();
+    } else if (npc.name === 'job_master') {
+        if (player.job !== 'no_job') {
+            alert(getTranslation('already_have_job'));
+        } else if (player.level < 3) {
+            alert(getTranslation('need_level_3_for_job'));
+        } else if (player.gold < 50) {
+            alert(getTranslation('need_50_gold_for_job'));
+        } else {
             player.gold -= 50;
             const newJob = jobs[Math.floor(Math.random() * jobs.length)];
             player.job = newJob;
             switch (newJob) {
-                case 'warrior': player.maxMana = 50; break;
-                case 'mage': player.maxMana = 200; break;
-                case 'priest': player.maxMana = 150; break;
-                case 'thief': player.maxMana = 100; break;
+                case 'warrior':
+                    player.maxMana = 50;
+                    break;
+                case 'mage':
+                    player.maxMana = 200;
+                    break;
+                case 'priest':
+                    player.maxMana = 150;
+                    break;
+                case 'thief':
+                    player.maxMana = 100;
+                    break;
             }
             player.mana = player.maxMana;
-            alert(getTranslation('job_change_complete', { job: getTranslation(newJob) }));
+            alert(getTranslation('job_change_complete', {
+                job: getTranslation(newJob)
+            }));
         }
     } else if (npc.name === 'reset_master') {
-        if (player.job === 'no_job') alert(getTranslation('no_job'));
-        else if (player.gold < 50) alert(getTranslation('need_50_gold_for_job'));
-        else if (confirm(getTranslation('job_reset_confirm'))) {
+        if (player.job === 'no_job') {
+            alert(getTranslation('no_job'));
+        } else if (player.gold < 50) {
+            alert(getTranslation('need_50_gold_for_job'));
+        } else if (confirm(getTranslation('job_reset_confirm'))) {
             player.gold -= 50;
             player.job = 'no_job';
-            player.skills = { weak: null, strong: null, ultimate: null };
+            player.skills = {
+                weak: null,
+                strong: null,
+                ultimate: null
+            };
             // Reset job-specific items in inventory
             shopItems.forEach(item => {
                 if (item.job && player.inventory[item.id] > 0) {
@@ -1135,6 +1329,21 @@ function interactWithNpc(npc) {
     } else if (npc.name === '랜덤관') {
         alert('랜덤박스~랜덤박스~랜덤박스~랜덤박스~ 무엇이 나올까용?');
         openRandomModal();
+    } else if (npc.name === '이세카이') {
+        if (confirm('이게 바로 이세카이에서 가져온 무기일세 살탠가? (776 골드)')) {
+            if (player.gold >= 776) {
+                player.gold -= 776;
+                player.job = 'gunslinger';
+                player.skills = {
+                    weak: null,
+                    strong: null,
+                    ultimate: null
+                };
+                alert('이세계에 전설의 물건을 얻었다');
+            } else {
+                alert('골드가 부족합니다.');
+            }
+        }
     }
 }
 
@@ -1403,6 +1612,7 @@ function init() {
     currentMapId = 'overworld'; // Ensure map is overworld
     createOverworldBackground();
     spawnMonsters();
+    setInterval(spawnIsekaiNpc, 600000); // Spawn every 10 minutes
     gameLoop();
     updateUIText(); 
 }
