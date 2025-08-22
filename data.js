@@ -41,10 +41,10 @@ const shopItems = [
     { id: 'manaPotionSmall', name: '작은 마나 물약', description: '마나를 5 회복합니다.', price: 5, type: 'mana', heal: 5 },
     { id: 'manaPotionMedium', name: '중간 마나 물약', description: '마나를 50 회복합니다.', price: 20, type: 'mana', heal: 50 },
     { id: 'manaPotionLarge', name: '큰 마나 물약', description: '마나를 100 회복합니다.', price: 50, type: 'mana', heal: 100 },
-    { id: 'sword', name: '낡은 검', description: '검사 전용. 물리 공격력 7.', price: 100, job: 'warrior', attack: 7, damageType: 'physical', bonusMultiplier: 1.5 },
-    { id: 'staff', name: '낡은 지팡이', description: '마법사 전용. 마법 공격력 7.', price: 100, job: 'mage', attack: 7, damageType: 'magic', bonusMultiplier: 1.2 },
-    { id: 'cross', name: '낡은 십자가', description: '성직자 전용. 공격력 7.', price: 100, job: 'priest', attack: 7, damageType: 'hybrid', bonusMultiplier: 1.3 },
-    { id: 'dagger', name: '낡은 단검', description: '도적 전용. 물리 공격력 7.', price: 100, job: 'thief', attack: 7, damageType: 'physical', bonusMultiplier: 1.5 }
+    { id: 'sword', name: '쓸수있는 검', description: '검사 전용. 물리 공격력 7.', price: 100, job: 'warrior', attack: 7, damageType: 'physical', bonusMultiplier: 1.5 },
+    { id: 'staff', name: '쓸수있는 지팡이', description: '마법사 전용. 마법 공격력 7.', price: 100, job: 'mage', attack: 7, damageType: 'magic', bonusMultiplier: 1.2 },
+    { id: 'cross', name: '쓸수있는 십자가', description: '성직자 전용. 공격력 7.', price: 100, job: 'priest', attack: 7, damageType: 'hybrid', bonusMultiplier: 1.3 },
+    { id: 'dagger', name: '쓸수있는 단검', description: '도적 전용. 물리 공격력 7.', price: 100, job: 'thief', attack: 7, damageType: 'physical', bonusMultiplier: 1.5 }
 ];
 
 window.shopItems = shopItems;
