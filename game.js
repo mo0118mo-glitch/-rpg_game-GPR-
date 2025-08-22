@@ -1123,48 +1123,48 @@ function useSkill(skillType) {
                 });
             }
         } else if (player.job === 'priest') {
-                if (skillType === 'weak') { 
-                } else if (skillType === 'strong') { 
-                    player.buffs.push({
-                        type: 'holyArmor',
-                        duration: skill.duration,
-                        createdAt: Date.now(),
-                        damageReduction: skill.damageReduction
-                    });
-                } else if (skillType === 'ultimate') { 
-                    const holyLightRadius = tileSize * 4.5;
-                    const targetX = player.x + player.width / 2;
-                    const targetY = player.y + player.height / 2;
+            if (skillType === 'weak') { 
+            } else if (skillType === 'strong') { 
+                player.buffs.push({
+                    type: 'holyArmor',
+                    duration: skill.duration,
+                    createdAt: Date.now(),
+                    damageReduction: skill.damageReduction
+                });
+            } else if (skillType === 'ultimate') { 
+                const holyLightRadius = tileSize * 4.5;
+                const targetX = player.x + player.width / 2;
+                const targetY = player.y + player.height / 2;
 
-                    attack = {
-                        x: targetX - holyLightRadius,
-                        y: targetY - holyLightRadius,
-                        width: holyLightRadius * 2,
-                        height: holyLightRadius * 2,
-                        alpha: 0.8,
-                        createdAt: Date.now(),
-                        duration: 500,
-                        hitMonsters: [],
-                        damage: baseDamage + skill.damage,
-                        damageType: skill.damageType,
-                        isSkill: true,
-                        color: 'rgba(255, 255, 150, 0.8)',
-                        isCircular: true
-                    };
+                attack = {
+                    x: targetX - holyLightRadius,
+                    y: targetY - holyLightRadius,
+                    width: holyLightRadius * 2,
+                    height: holyLightRadius * 2,
+                    alpha: 0.8,
+                    createdAt: Date.now(),
+                    duration: 500,
+                    hitMonsters: [],
+                    damage: baseDamage + skill.damage,
+                    damageType: skill.damageType,
+                    isSkill: true,
+                    color: 'rgba(255, 255, 150, 0.8)',
+                    isCircular: true
+                };
 
-                    activeGroundEffects.push({
-                        x: targetX,
-                        y: targetY,
-                        radius: holyLightRadius,
-                        duration: 5000,
-                        createdAt: Date.now(),
-                        color: 'rgba(255, 255, 150, 0.5)',
-                        damagePerSecond: 2,
-                        dotDuration: 3000,
-                        lastDamageTime: Date.now(),
-                        hitMonsters: []
-                    });
-                }
+                activeGroundEffects.push({
+                    x: targetX,
+                    y: targetY,
+                    radius: holyLightRadius,
+                    duration: 5000,
+                    createdAt: Date.now(),
+                    color: 'rgba(255, 255, 150, 0.5)',
+                    damagePerSecond: 2,
+                    dotDuration: 3000,
+                    lastDamageTime: Date.now(),
+                    hitMonsters: []
+                });
+            }
         } else if (player.job === 'thief') {
                 if (skillType === 'weak') { 
                     const projectileSpeed = 15;
