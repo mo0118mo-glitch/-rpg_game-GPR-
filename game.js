@@ -1165,7 +1165,7 @@ function useSkill(skillType) {
                         hitMonsters: []
                     });
                 }
-            } else if (player.job === 'thief') {
+        } else if (player.job === 'thief') {
                 if (skillType === 'weak') { 
                     const projectileSpeed = 15;
                     let dx = 0, dy = 0;
