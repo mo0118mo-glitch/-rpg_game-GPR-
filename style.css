@@ -363,3 +363,107 @@ canvas {
     justify-content: center;
     align-items: center;
 }
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+#login-screen input {
+    margin-bottom: 10px;
+    padding: 8px;
+    width: 200px;
+}
+
+#login-screen button {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#game-wrapper {
+    position: relative;
+}
+
+#settings-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+}
+
+#return-to-town-button {
+    position: absolute;
+    top: 50px; /* Adjust as needed */
+    right: 10px;
+    z-index: 2;
+}
+
+.game-mode-selection {
+    margin: 20px 0;
+    color: #fff;
+}
+
+.game-mode-selection label {
+    margin: 0 10px;
+    font-size: 1.2em;
+}
+
+#random-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.random-btn {
+    padding: 10px;
+    font-size: 1.1em;
+    background-color: #4a4a4a;
+    color: #fff;
+    border: 2px solid #ffd700;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.random-btn:hover {
+    background-color: #ffd700;
+    color: #1a1a1a;
+}
+
+#random-result {
+    margin-top: 15px;
+    font-size: 1.2em;
+    text-align: center;
+}

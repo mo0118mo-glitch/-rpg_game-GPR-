@@ -1132,6 +1132,9 @@ function interactWithNpc(npc) {
         }
     } else if (npc.name === 'skill_master') {
         openSkillModal();
+    } else if (npc.name === '랜덤관') {
+        alert('랜덤박스~랜덤박스~랜덤박스~랜덤박스~ 무엇이 나올까용?');
+        openRandomModal();
     }
 }
 
@@ -1227,6 +1230,12 @@ const skillModal = document.getElementById('skill-modal');
 const skillList = document.getElementById('skill-list');
 const closeSkillBtn = document.getElementById('close-skill-btn');
 
+const randomModal = document.getElementById('random-modal');
+const closeRandomBtn = document.getElementById('close-random-btn');
+const playerGoldRandom = document.getElementById('player-gold-random');
+const randomOptions = document.getElementById('random-options');
+const randomResult = document.getElementById('random-result');
+
 function openSkillModal() {
     if (player.job === 'no_job') {
         alert(getTranslation('need_job_for_skill'));
@@ -1285,6 +1294,55 @@ function populateSkillList() {
         `;
         skillList.appendChild(skillItem);
     }
+}
+
+function openRandomModal() {
+    playerGoldRandom.textContent = player.gold;
+    randomResult.textContent = '';
+    randomModal.style.display = 'flex';
+    gamePaused = true;
+}
+
+function closeRandomModal() {
+    randomModal.style.display = 'none';
+    gamePaused = false;
+}
+
+function playRandom(cost) {
+    if (player.gold < cost) {
+        randomResult.textContent = getTranslation('not_enough_gold');
+        return;
+    }
+
+    player.gold -= cost;
+    let winnings = 0;
+    const rand = Math.random();
+
+    if (rand < 1/2) {
+        // 꽝
+        winnings = 0;
+        randomResult.textContent = "아쉽지만 꽝입니다!";
+    } else if (rand < 1/2 + 1/3) {
+        // 원금 회수
+        winnings = cost;
+        randomResult.textContent = `본전입니다! ${cost} 골드를 돌려받았습니다.`;
+    } else if (rand < 1/2 + 1/3 + 1/12) {
+        // 2배
+        winnings = cost * 2;
+        randomResult.textContent = `축하합니다! 2배 당첨! ${winnings} 골드를 획득했습니다!`;
+    } else if (rand < 1/2 + 1/3 + 1/12 + 1/18) {
+        // 3배
+        winnings = cost * 3;
+        randomResult.textContent = `대박! 3배 당첨! ${winnings} 골드를 획득했습니다!`;
+    } else {
+        // 5배
+        winnings = cost * 5;
+        randomResult.textContent = `인생역전! 5배 당첨! ${winnings} 골드를 획득했습니다!`;
+    }
+
+    player.gold += winnings;
+    playerGoldRandom.textContent = player.gold;
+    savePlayerState(currentUser);
 }
 
 function savePlayerState(currentUser) { 
@@ -1405,6 +1463,13 @@ window.addEventListener('DOMContentLoaded', () => {
     closeSettingsBtn.addEventListener('click', closeSettingsModal);
     closePotionBtn.addEventListener('click', closePotionModal);
     closeSkillBtn.addEventListener('click', closeSkillModal);
+    closeRandomBtn.addEventListener('click', closeRandomModal);
+    document.querySelectorAll('.random-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const cost = parseInt(e.target.dataset.cost);
+            playRandom(cost);
+        });
+    });
     document.getElementById('return-to-town-button').addEventListener('click', startReturnToTown); // New line
 
     window.addEventListener('keydown', (e) => {
@@ -1413,11 +1478,13 @@ window.addEventListener('DOMContentLoaded', () => {
             const potionModal = document.getElementById('potion-modal');
             const skillModal = document.getElementById('skill-modal');
             const shopModal = document.getElementById('shop-modal');
+            const randomModal = document.getElementById('random-modal');
 
             if (settingsModal.style.display === 'flex') closeSettingsModal();
             if (potionModal.style.display === 'flex') closePotionModal();
             if (skillModal.style.display === 'flex') closeSkillModal();
             if (shopModal.style.display === 'flex') closeShop();
+            if (randomModal.style.display === 'flex') closeRandomModal();
         }
     });
 });
