@@ -1132,8 +1132,6 @@ function interactWithNpc(npc) {
         }
     } else if (npc.name === 'skill_master') {
         openSkillModal();
-    } else if (npc.name === '랜덤관') {
-        alert('도박은 좋지 않습니다!');
     }
 }
 
