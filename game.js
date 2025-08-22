@@ -113,7 +113,8 @@ const maps = {
             { id: 1, name: 'merchant', x: (50 + 2) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
             { id: 2, name: 'job_master', x: (50 + 8) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
             { id: 4, name: 'skill_master', x: (50 + 5) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
-            { id: 3, name: 'reset_master', x: (50 + 14) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' }
+            { id: 3, name: 'reset_master', x: (50 + 14) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
+            { id: 5, name: '랜덤관', x: (50 + 8) * tileSize, y: 55 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' }
         ],
         monsters: [],
         portals: [
@@ -339,7 +340,7 @@ function draw() {
     });
 
     if (map.npcs) {
-        const npcsWithHouses = ['merchant', 'job_master', 'reset_master'];
+        const npcsWithHouses = ['merchant', 'job_master', 'reset_master', '랜덤관'];
         map.npcs.forEach(npc => {
             if (npcsWithHouses.includes(npc.name)) drawHouse(npc);
         });
@@ -1131,6 +1132,8 @@ function interactWithNpc(npc) {
         }
     } else if (npc.name === 'skill_master') {
         openSkillModal();
+    } else if (npc.name === '랜덤관') {
+        alert('도박은 좋지 않습니다!');
     }
 }
 

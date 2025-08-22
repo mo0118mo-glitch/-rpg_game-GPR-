@@ -51,6 +51,7 @@ const languages = {
         'job_master': '전직관',
         'skill_master': '스킬관',
         'reset_master': '삭제관',
+        'gambler': '랜덤관',
 
         // Portals
         'slime_dungeon': '슬라임 동굴',
@@ -129,6 +130,7 @@ const languages = {
         'job_master': 'Job Master',
         'skill_master': 'Skill Master',
         'reset_master': 'Reset Master',
+        'gambler': 'Gambler',
 
         // Portals
         'slime_dungeon': 'Slime Cave',
@@ -207,6 +209,7 @@ const languages = {
         'job_master': '転職マスター',
         'skill_master': 'スキルマスター',
         'reset_master': 'リセットマスター',
+        'gambler': 'ギャンブラー',
 
         // Portals
         'slime_dungeon': 'スライムの洞窟',
