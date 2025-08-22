@@ -298,6 +298,76 @@ function drawHouse(npc) {
     drawWindow(houseX + houseWidth * 0.75 - windowSize / 2, houseY + tileSize * 0.5, windowSize);
 }
 
+function drawPlayerWeapon(ctx) {
+    const weapon = weapons[player.job];
+    if (!weapon) return;
+
+    ctx.save();
+    // Translate to the center of the player
+    ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+
+    // Rotate the weapon
+    ctx.rotate(15 * Math.PI / 180);
+
+    // Adjust position based on direction
+    let offsetX = 0;
+    let offsetY = 0;
+    switch (player.lastDirection) {
+        case 'up':
+            offsetX = 10;
+            offsetY = -10;
+            break;
+        case 'down':
+            offsetX = -10;
+            offsetY = 10;
+            break;
+        case 'left':
+            offsetX = -10;
+            offsetY = -10;
+            break;
+        case 'right':
+            offsetX = 10;
+            offsetY = 10;
+            break;
+    }
+
+    ctx.fillStyle = weapon.color;
+
+    if (player.job === 'thief') {
+        // Draw two swords
+        // Right hand
+        ctx.fillRect(offsetX - weapon.width / 2, offsetY - weapon.height / 2, weapon.width, weapon.height);
+        // Left hand
+        ctx.fillRect(-offsetX - weapon.width / 2, -offsetY - weapon.height / 2, weapon.width, weapon.height);
+    } else {
+        // Draw single weapon
+        ctx.translate(offsetX, offsetY);
+        switch (weapon.shape) {
+            case 'sword':
+                ctx.fillRect(-weapon.width / 2, -weapon.height / 2, weapon.width, weapon.height);
+                break;
+            case 'cross':
+                ctx.fillRect(-weapon.width / 2, -weapon.height / 2, weapon.width, weapon.height);
+                ctx.fillRect(-weapon.height / 2, -weapon.width / 2, weapon.height, weapon.width);
+                break;
+            case 'gun':
+                ctx.fillRect(0, 0, weapon.width, weapon.height);
+                ctx.fillRect(0, 0, weapon.height, weapon.width);
+                break;
+            case 'triangle':
+                ctx.beginPath();
+                ctx.moveTo(0, -weapon.height / 2);
+                ctx.lineTo(weapon.width / 2, weapon.height / 2);
+                ctx.lineTo(-weapon.width / 2, weapon.height / 2);
+                ctx.closePath();
+                ctx.fill();
+                break;
+        }
+    }
+
+    ctx.restore();
+}
+
 function draw() {
     if (gamePaused) return;
     const map = maps[currentMapId];
@@ -415,6 +485,7 @@ function draw() {
 
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
+    drawPlayerWeapon(ctx);
     drawDirectionDots(ctx, player);
 
     if (player.isStealthed) {
@@ -675,6 +746,7 @@ function update() {
         monsters.forEach(monster => {
             if (isColliding(attack, monster) && !attack.hitMonsters.includes(monster.id)) {
                 monster.hp -= attack.damage;
+                increaseUltimateGauge(5);
                 if (!attack.piercing) {
                     attack.hitMonsters.push(monster.id);
                 }
@@ -823,7 +895,6 @@ function handlePlayerAttack() {
         }
         activeAttacks.push(attack);
     }
-    player.ultimateGauge = Math.min(player.maxUltimateGauge, player.ultimateGauge + 1);
 }
 
 function startReturnToTown() {
@@ -847,6 +918,13 @@ function startReturnToTown() {
     };
 }
 
+function increaseUltimateGauge(amount) {
+    if (player.job === 'priest') {
+        return;
+    }
+    player.ultimateGauge = Math.min(player.maxUltimateGauge, player.ultimateGauge + amount);
+}
+
 function useSkill(skillType) {
     const skill = player.skills[skillType];
     if (!skill) return;
@@ -867,10 +945,6 @@ function useSkill(skillType) {
 
     player.skillCooldowns[skillType] = skill.cooldown;
 
-    if (skillType === 'weak') {
-        player.ultimateGauge = Math.min(player.maxUltimateGauge, player.ultimateGauge + 5);
-    } else if (skillType === 'strong') {
-        player.ultimateGauge = Math.min(player.maxUltimateGauge, player.ultimateGauge + 20);
     } else if (skillType === 'ultimate') {
         player.ultimateGauge = 0;
     }

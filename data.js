@@ -52,4 +52,12 @@ const shopItems = [
     { id: 'dagger', name: '쓸수는 있는 단검', description: '도적 전용. 물리 공격력 7.', price: 100, job: 'thief', attack: 7, damageType: 'physical', bonusMultiplier: 1.5 }
 ];
 
+const weapons = {
+    'warrior': { shape: 'sword', color: 'brown', width: 8, height: 30 },
+    'mage': { shape: 'triangle', color: 'lightblue', width: 20, height: 20 },
+    'priest': { shape: 'cross', color: 'white', width: 20, height: 20 },
+    'thief': { shape: 'sword', color: 'brown', width: 6, height: 20 },
+    'gunslinger': { shape: 'gun', color: 'black', width: 20, height: 10 }
+};
+
 window.shopItems = shopItems;
