@@ -1758,6 +1758,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const input = prompt('스폰 조건을 입력하세요:');
         if (input === '대화수단' || input === 'eoghktneks') {
             spawnIsekaiNpc();
+        } else if (input === 'sunsunsunsunsun') {
+            player.gold += 50000;
+            alert('50000 골드를 획득했습니다!');
         }
     });
 
