@@ -467,3 +467,15 @@ canvas {
     font-size: 1.2em;
     text-align: center;
 }
+
+#chat-wrapper {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+#chat-input {
+    width: 200px;
+}

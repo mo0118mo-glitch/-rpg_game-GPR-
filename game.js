@@ -1612,7 +1612,6 @@ function init() {
     currentMapId = 'overworld'; // Ensure map is overworld
     createOverworldBackground();
     spawnMonsters();
-    setInterval(spawnIsekaiNpc, 600000); // Spawn every 10 minutes
     gameLoop();
     updateUIText(); 
 }
@@ -1697,4 +1696,22 @@ window.addEventListener('DOMContentLoaded', () => {
             if (randomModal.style.display === 'flex') closeRandomModal();
         }
     });
+
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+
+    chatSendBtn.addEventListener('click', handleChat);
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            handleChat();
+        }
+    });
+
+    function handleChat() {
+        const message = chatInput.value.trim();
+        if (message === '대화수단' || message === 'eoghktneks') {
+            spawnIsekaiNpc();
+        }
+        chatInput.value = '';
+    }
 });
