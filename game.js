@@ -945,7 +945,7 @@ function useSkill(skillType) {
 
     player.skillCooldowns[skillType] = skill.cooldown;
 
-    } else if (skillType === 'ultimate') {
+    if (skillType === 'ultimate') {
         player.ultimateGauge = 0;
     }
 
