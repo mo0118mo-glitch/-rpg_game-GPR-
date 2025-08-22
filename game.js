@@ -1680,6 +1680,12 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
     document.getElementById('return-to-town-button').addEventListener('click', startReturnToTown); // New line
+    document.getElementById('spawn-npc-button').addEventListener('click', () => {
+        const input = prompt('스폰 조건을 입력하세요:');
+        if (input === '대화수단' || input === 'eoghktneks') {
+            spawnIsekaiNpc();
+        }
+    });
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -1696,22 +1702,4 @@ window.addEventListener('DOMContentLoaded', () => {
             if (randomModal.style.display === 'flex') closeRandomModal();
         }
     });
-
-    const chatInput = document.getElementById('chat-input');
-    const chatSendBtn = document.getElementById('chat-send-btn');
-
-    chatSendBtn.addEventListener('click', handleChat);
-    chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            handleChat();
-        }
-    });
-
-    function handleChat() {
-        const message = chatInput.value.trim();
-        if (message === '대화수단' || message === 'eoghktneks') {
-            spawnIsekaiNpc();
-        }
-        chatInput.value = '';
-    }
 });
