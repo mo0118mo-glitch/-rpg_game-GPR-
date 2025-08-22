@@ -306,35 +306,35 @@ function drawPlayerWeapon(ctx) {
     // Translate to the center of the player
     ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
 
-    let offsetX = 0;
-    let offsetY = 0;
     let rotation = 0;
+    
+    // Base rotation when facing down
+    if (player.lastDirection === 'down') {
+        rotation = 15 * Math.PI / 180;
+    }
 
     switch (player.lastDirection) {
         case 'up':
-            offsetX = 0;
-            offsetY = -player.height / 2;
-            rotation = 0;
+            rotation += 0;
             break;
         case 'down':
-            offsetX = 0;
-            offsetY = player.height / 2;
-            rotation = 180 * Math.PI / 180;
+            // Already applied base rotation
             break;
         case 'left':
-            offsetX = -player.width / 2;
-            offsetY = 0;
-            rotation = -90 * Math.PI / 180;
+            rotation += -90 * Math.PI / 180;
             break;
         case 'right':
-            offsetX = player.width / 2;
-            offsetY = 0;
-            rotation = 90 * Math.PI / 180;
+            rotation += 90 * Math.PI / 180;
             break;
     }
 
     ctx.rotate(rotation);
+
+    // Offset to the right hand
+    const offsetX = 10;
+    const offsetY = 0;
     ctx.translate(offsetX, offsetY);
+
 
     ctx.fillStyle = weapon.color;
 
