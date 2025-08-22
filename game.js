@@ -306,42 +306,50 @@ function drawPlayerWeapon(ctx) {
     // Translate to the center of the player
     ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
 
-    // Rotate the weapon
-    ctx.rotate(15 * Math.PI / 180);
-
-    // Adjust position based on direction
     let offsetX = 0;
     let offsetY = 0;
+    let rotation = 0;
+
     switch (player.lastDirection) {
         case 'up':
-            offsetX = 10;
-            offsetY = -10;
+            offsetX = 0;
+            offsetY = -player.height / 2;
+            rotation = 0;
             break;
         case 'down':
-            offsetX = -10;
-            offsetY = 10;
+            offsetX = 0;
+            offsetY = player.height / 2;
+            rotation = 180 * Math.PI / 180;
             break;
         case 'left':
-            offsetX = -10;
-            offsetY = -10;
+            offsetX = -player.width / 2;
+            offsetY = 0;
+            rotation = -90 * Math.PI / 180;
             break;
         case 'right':
-            offsetX = 10;
-            offsetY = 10;
+            offsetX = player.width / 2;
+            offsetY = 0;
+            rotation = 90 * Math.PI / 180;
             break;
     }
+
+    ctx.rotate(rotation);
+    ctx.translate(offsetX, offsetY);
 
     ctx.fillStyle = weapon.color;
 
     if (player.job === 'thief') {
         // Draw two swords
         // Right hand
-        ctx.fillRect(offsetX - weapon.width / 2, offsetY - weapon.height / 2, weapon.width, weapon.height);
-        // Left hand
-        ctx.fillRect(-offsetX - weapon.width / 2, -offsetY - weapon.height / 2, weapon.width, weapon.height);
+        ctx.fillRect(-weapon.width / 2, -weapon.height / 2, weapon.width, weapon.height);
+        // Left hand (opposite side)
+        ctx.save();
+        ctx.translate(-offsetX * 2, 0);
+        ctx.fillRect(-weapon.width / 2, -weapon.height / 2, weapon.width, weapon.height);
+        ctx.restore();
+
     } else {
         // Draw single weapon
-        ctx.translate(offsetX, offsetY);
         switch (weapon.shape) {
             case 'sword':
                 ctx.fillRect(-weapon.width / 2, -weapon.height / 2, weapon.width, weapon.height);
@@ -351,8 +359,8 @@ function drawPlayerWeapon(ctx) {
                 ctx.fillRect(-weapon.height / 2, -weapon.width / 2, weapon.height, weapon.width);
                 break;
             case 'gun':
-                ctx.fillRect(0, 0, weapon.width, weapon.height);
-                ctx.fillRect(0, 0, weapon.height, weapon.width);
+                ctx.fillRect(0, -weapon.height / 2, weapon.width, weapon.height);
+                ctx.fillRect(0, -weapon.height/2, weapon.height, weapon.width/2);
                 break;
             case 'triangle':
                 ctx.beginPath();
