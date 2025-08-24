@@ -90,6 +90,19 @@ const activeGroundEffects = [];
 const camera = { x: 0, y: 0, width: canvas.width, height: canvas.height };
 let backgroundCanvas = null; // 오버월드 배경용
 let isekaiNpc = null;
+const monsterImages = {};
+
+function preloadImages() {
+    const allMonsters = { ...initialMonsters, ...subspeciesMonsters };
+    for (const monsterKey in allMonsters) {
+        const monster = allMonsters[monsterKey];
+        if (monster.image) {
+            const img = new Image();
+            img.src = monster.image;
+            monsterImages[monster.name] = img;
+        }
+    }
+}
 
 function createMap(cols, rows, wallProbability = 0) {
     const map = [];
@@ -448,8 +461,12 @@ function draw() {
         ctx.fill();
     });
     monsters.forEach(m => {
-        ctx.fillStyle = m.color;
-        ctx.fillRect(m.x, m.y, m.width, m.height);
+        if (monsterImages[m.name]) {
+            ctx.drawImage(monsterImages[m.name], m.x, m.y, m.width, m.height);
+        } else {
+            ctx.fillStyle = m.color;
+            ctx.fillRect(m.x, m.y, m.width, m.height);
+        }
         drawDirectionDots(ctx, m);
         ctx.fillStyle = 'red';
         ctx.fillRect(m.x, m.y - 10, m.width, 5);
@@ -1683,6 +1700,7 @@ function init() {
     currentUser = sessionStorage.getItem('currentUser');
     loadKeyMap();
     loadPlayerState(currentUser); // Load saved state first
+    preloadImages();
 
     if (player.hp <= 0) {
         player.hp = player.maxHp;
