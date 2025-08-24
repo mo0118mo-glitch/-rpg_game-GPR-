@@ -122,20 +122,20 @@ function createMap(cols, rows, wallProbability = 0) {
 
 const maps = {
     overworld: {
-        layout: createMap(100, 100),
+        layout: createMap(50, 50),
         npcs: [
-            { id: 1, name: 'merchant', x: (50 + 2) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
-            { id: 2, name: 'job_master', x: (50 + 8) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
-            { id: 4, name: 'skill_master', x: (50 + 5) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
-            { id: 3, name: 'reset_master', x: (50 + 14) * tileSize, y: 50 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
-            { id: 5, name: '랜덤관', x: (50 + 8) * tileSize, y: 55 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' }
+            { id: 1, name: 'merchant', x: (25 + 2) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
+            { id: 2, name: 'job_master', x: (25 + 8) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
+            { id: 4, name: 'skill_master', x: (25 + 5) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
+            { id: 3, name: 'reset_master', x: (25 + 14) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
+            { id: 5, name: '랜덤관', x: (25 + 8) * tileSize, y: 30 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' }
         ],
         monsters: [],
         portals: [
-            { name: 'slime_dungeon', x: (50 + 20) * tileSize, y: 50 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'goblin_dungeon', x: (50 + 22) * tileSize, y: 50 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'orc_dungeon', x: (50 + 24) * tileSize, y: 50 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'subspecies_dungeon', x: (50 + 26) * tileSize, y: 50 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
+            { name: 'slime_dungeon', x: (25 + 10) * tileSize, y: 25 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'goblin_dungeon', x: (25 + 12) * tileSize, y: 25 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'orc_dungeon', x: (25 + 14) * tileSize, y: 25 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'subspecies_dungeon', x: (25 + 16) * tileSize, y: 25 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
         ]
     },
     slimeDungeon: {
