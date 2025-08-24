@@ -122,49 +122,49 @@ function createMap(cols, rows, wallProbability = 0) {
 
 const maps = {
     overworld: {
-        layout: createMap(50, 50),
+        layout: createMap(70, 70),
         npcs: [
-            { id: 1, name: 'merchant', x: (25 + 2) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
-            { id: 2, name: 'job_master', x: (25 + 8) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
-            { id: 4, name: 'skill_master', x: (25 + 5) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
-            { id: 3, name: 'reset_master', x: (25 + 14) * tileSize, y: 25 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
-            { id: 5, name: '랜덤관', x: (25 + 8) * tileSize, y: 30 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' }
+            { id: 1, name: 'merchant', x: (35 + 2) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
+            { id: 2, name: 'job_master', x: (35 + 8) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
+            { id: 4, name: 'skill_master', x: (35 + 5) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
+            { id: 3, name: 'reset_master', x: (35 + 14) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
+            { id: 5, name: '랜덤관', x: (35 + 8) * tileSize, y: 40 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' }
         ],
         monsters: [],
         portals: [
-            { name: 'slime_dungeon', x: (25 + 10) * tileSize, y: 25 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'goblin_dungeon', x: (25 + 12) * tileSize, y: 25 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'orc_dungeon', x: (25 + 14) * tileSize, y: 25 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'subspecies_dungeon', x: (25 + 16) * tileSize, y: 25 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
+            { name: 'slime_dungeon', x: (35 + 10) * tileSize, y: 35 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'goblin_dungeon', x: (35 + 12) * tileSize, y: 35 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'orc_dungeon', x: (35 + 14) * tileSize, y: 35 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'subspecies_dungeon', x: (35 + 16) * tileSize, y: 35 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
         ]
     },
     slimeDungeon: {
-        layout: createMap(20, 20, 0),
+        layout: createMap(40, 40, 0),
         npcs: [],
         monsters: [{ type: initialMonsters.slime, count: 5 }],
-        portals: [{ name: 'exit', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 38 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     },
     goblinDungeon: {
-        layout: createMap(20, 20, 0),
+        layout: createMap(40, 40, 0),
         npcs: [],
         monsters: [{ type: initialMonsters.goblin, count: 5 }],
-        portals: [{ name: 'exit', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 38 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     },
     orcDungeon: {
-        layout: createMap(20, 20, 0),
+        layout: createMap(40, 40, 0),
         npcs: [],
         monsters: [{ type: initialMonsters.orc, count: 5 }],
-        portals: [{ name: 'exit', x: 2 * tileSize, y: 18 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 38 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     },
     subspeciesDungeon: {
-        layout: createMap(25, 25, 0),
+        layout: createMap(45, 45, 0),
         npcs: [],
         monsters: [
             { type: subspeciesMonsters.slime, count: 1 },
             { type: subspeciesMonsters.goblin, count: 1 },
             { type: subspeciesMonsters.orc, count: 1 }
         ],
-        portals: [{ name: 'exit', x: 2 * tileSize, y: 23 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
+        portals: [{ name: 'exit', x: 2 * tileSize, y: 43 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     }
 };
 
