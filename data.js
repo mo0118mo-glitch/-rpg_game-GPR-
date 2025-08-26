@@ -1,13 +1,13 @@
 const jobs = ['warrior', 'mage', 'priest', 'thief', 'gunslinger'];
 
 const initialMonsters = {
-    slime: { id: 1, name: '슬라임', width: 32, height: 32, image: 'https://www.nicepng.com/png/full/9-93252_maplestory-slime-png-maplestory-slime-pixel-art.png', hp: 6, maxHp: 6, attack: 5, gold: 10, speed: 1, detectionRange: 200, exp: 3, lastDirection: 'down' },
+    slime: { id: 1, name: '슬라임', width: 32, height: 32, color: 'red', hp: 6, maxHp: 6, attack: 5, gold: 10, speed: 1, detectionRange: 200, exp: 3, lastDirection: 'down' },
     goblin: { id: 2, name: '고블린', width: 32, height: 32, color: 'green', hp: 10, maxHp: 10, attack: 8, gold: 20, speed: 1.5, detectionRange: 250, exp: 5, lastDirection: 'down' },
     orc: { id: 3, name: '오크', width: 32, height: 32, color: 'blue', hp: 16, maxHp: 16, attack: 12, gold: 50, speed: 1, detectionRange: 300, exp: 10, lastDirection: 'down' }
 };
 
 const subspeciesMonsters = {
-    slime: { ...initialMonsters.slime, name: '아종 슬라임', hp: initialMonsters.slime.hp * 3, maxHp: initialMonsters.slime.hp * 3, gold: Math.floor(initialMonsters.slime.gold * 3.5), exp: Math.floor(initialMonsters.slime.exp * 3.5) },
+    slime: { ...initialMonsters.slime, name: '아종 슬라임', color: '#FF7F7F', hp: initialMonsters.slime.hp * 3, maxHp: initialMonsters.slime.hp * 3, gold: Math.floor(initialMonsters.slime.gold * 3.5), exp: Math.floor(initialMonsters.slime.exp * 3.5) },
     goblin: { ...initialMonsters.goblin, name: '아종 고블린', color: '#7FFF7F', hp: initialMonsters.goblin.hp * 3, maxHp: initialMonsters.goblin.hp * 3, gold: Math.floor(initialMonsters.goblin.gold * 3.5), exp: Math.floor(initialMonsters.goblin.exp * 3.5) },
     orc: { ...initialMonsters.orc, name: '아종 오크', color: '#7F7FFF', hp: initialMonsters.orc.hp * 3, maxHp: initialMonsters.orc.hp * 3, gold: Math.floor(initialMonsters.orc.gold * 3.5), exp: Math.floor(initialMonsters.orc.exp * 3.5) }
 };
