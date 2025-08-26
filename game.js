@@ -79,7 +79,9 @@ const player = {
     buffs: [],
     isReturning: false,
     returnTimer: 0,
-    returnEffect: null
+    returnEffect: null,
+    unlocked_gpr: false,
+    unlocked_blue_jewel: false
 };
 
 let monsters = [];
@@ -128,7 +130,8 @@ const maps = {
             { id: 2, name: 'job_master', x: (35 + 8) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
             { id: 4, name: 'skill_master', x: (35 + 5) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
             { id: 3, name: 'reset_master', x: (35 + 14) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
-            { id: 5, name: '랜덤관', x: (35 + 8) * tileSize, y: 40 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' }
+            { id: 5, name: '랜덤관', x: (35 + 8) * tileSize, y: 40 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' },
+            { id: 6, name: '공간을 가르는 자', x: 68 * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'white', lastDirection: 'down' }
         ],
         monsters: [],
         portals: [
@@ -1443,6 +1446,14 @@ function interactWithNpc(npc) {
                 alert('골드가 부족합니다.');
             }
         }
+    } else if (npc.name === '공간을 가르는 자') {
+        if (player.level < 10) {
+            alert("에잉 님은 이과정 못버텨유~ 10레벨 찍고오슈");
+        } else if (player.gold < 5000) {
+            alert("돈없으면 이거 못열어유 이거하는데 얼마나 힘이드는데~~ 인건비로 5000골드는 줘야혀유~~");
+        } else {
+            openRiftModal();
+        }
     }
 }
 
@@ -1544,6 +1555,10 @@ const playerGoldRandom = document.getElementById('player-gold-random');
 const randomOptions = document.getElementById('random-options');
 const randomResult = document.getElementById('random-result');
 
+const riftModal = document.getElementById('rift-modal');
+const closeRiftBtn = document.getElementById('close-rift-btn');
+const riftOptions = document.getElementById('rift-options');
+
 function openSkillModal() {
     if (player.job === 'no_job') {
         alert(getTranslation('need_job_for_skill'));
@@ -1614,6 +1629,56 @@ function openRandomModal() {
 function closeRandomModal() {
     randomModal.style.display = 'none';
     gamePaused = false;
+}
+
+function openRiftModal() {
+    riftOptions.innerHTML = '';
+    const gprBtn = document.createElement('button');
+    gprBtn.className = 'rift-option-btn';
+    gprBtn.textContent = '진짜 GPR (5000G)';
+    if (player.unlocked_gpr) {
+        gprBtn.disabled = true;
+        gprBtn.textContent = '진짜 GPR (열림)';
+    }
+    gprBtn.onclick = () => unlockRift('gpr');
+    riftOptions.appendChild(gprBtn);
+
+    const blueJewelBtn = document.createElement('button');
+    blueJewelBtn.className = 'rift-option-btn';
+    blueJewelBtn.textContent = '푸른 보석 (5000G)';
+    if (player.unlocked_blue_jewel) {
+        blueJewelBtn.disabled = true;
+        blueJewelBtn.textContent = '푸른 보석 (열림)';
+    }
+    blueJewelBtn.onclick = () => unlockRift('blue_jewel');
+    riftOptions.appendChild(blueJewelBtn);
+
+    riftModal.style.display = 'flex';
+    gamePaused = true;
+}
+
+function closeRiftModal() {
+    riftModal.style.display = 'none';
+    gamePaused = false;
+}
+
+function unlockRift(choice) {
+    if (player.gold < 5000) {
+        alert("돈없으면 이거 못열어유 이거하는데 얼마나 힘이드는데~~ 인건비로 5000골드는 줘야혀유~~");
+        return;
+    }
+
+    if (choice === 'gpr' && !player.unlocked_gpr) {
+        player.gold -= 5000;
+        player.unlocked_gpr = true;
+        alert('진짜 GPR이 열렸습니다.');
+    } else if (choice === 'blue_jewel' && !player.unlocked_blue_jewel) {
+        player.gold -= 5000;
+        player.unlocked_blue_jewel = true;
+        alert('푸른 보석이 열렸습니다.');
+    }
+    savePlayerState(currentUser);
+    closeRiftModal();
 }
 
 function playRandom(cost) {
@@ -1773,6 +1838,7 @@ window.addEventListener('DOMContentLoaded', () => {
     closePotionBtn.addEventListener('click', closePotionModal);
     closeSkillBtn.addEventListener('click', closeSkillModal);
     closeRandomBtn.addEventListener('click', closeRandomModal);
+    closeRiftBtn.addEventListener('click', closeRiftModal);
     document.querySelectorAll('.random-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             const cost = parseInt(e.target.dataset.cost);
@@ -1797,12 +1863,14 @@ window.addEventListener('DOMContentLoaded', () => {
             const skillModal = document.getElementById('skill-modal');
             const shopModal = document.getElementById('shop-modal');
             const randomModal = document.getElementById('random-modal');
+            const riftModal = document.getElementById('rift-modal');
 
             if (settingsModal.style.display === 'flex') closeSettingsModal();
             if (potionModal.style.display === 'flex') closePotionModal();
             if (skillModal.style.display === 'flex') closeSkillModal();
             if (shopModal.style.display === 'flex') closeShop();
             if (randomModal.style.display === 'flex') closeRandomModal();
+            if (riftModal.style.display === 'flex') closeRiftModal();
         }
     });
 });
