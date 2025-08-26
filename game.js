@@ -132,10 +132,10 @@ const maps = {
         ],
         monsters: [],
         portals: [
-            { name: 'slime_dungeon', x: (35 + 10) * tileSize + 400, y: 35 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'goblin_dungeon', x: (35 + 12) * tileSize + 400, y: 35 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'orc_dungeon', x: (35 + 14) * tileSize + 400, y: 35 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'subspecies_dungeon', x: (35 + 16) * tileSize + 400, y: 35 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
+            { name: 'slime_dungeon', x: (35 + 10) * tileSize + 560, y: 35 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'goblin_dungeon', x: (35 + 12) * tileSize + 560, y: 35 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'orc_dungeon', x: (35 + 14) * tileSize + 560, y: 35 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+            { name: 'subspecies_dungeon', x: (35 + 16) * tileSize + 560, y: 35 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
         ]
     },
     slimeDungeon: {
