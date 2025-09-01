@@ -397,6 +397,49 @@ function drawPlayerWeapon(ctx) {
     ctx.restore();
 }
 
+function drawMinimap() {
+    const minimapCanvas = document.getElementById('minimapCanvas');
+    const minimapCtx = minimapCanvas.getContext('2d');
+    const map = maps[currentMapId];
+    const mapWidth = map.layout[0].length;
+    const mapHeight = map.layout.length;
+    const scaleX = minimapCanvas.width / (mapWidth * tileSize);
+    const scaleY = minimapCanvas.height / (mapHeight * tileSize);
+    const scale = Math.min(scaleX, scaleY);
+
+    minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+    // Draw map layout
+    for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+            if (map.layout[y][x] === 1) {
+                minimapCtx.fillStyle = 'black';
+            } else {
+                minimapCtx.fillStyle = 'lightgray';
+            }
+            minimapCtx.fillRect(x * tileSize * scale, y * tileSize * scale, tileSize * scale, tileSize * scale);
+        }
+    }
+
+    // Draw player
+    minimapCtx.fillStyle = 'blue';
+    minimapCtx.fillRect(player.x * scale, player.y * scale, player.width * scale, player.height * scale);
+
+    // Draw NPCs
+    if (map.npcs) {
+        map.npcs.forEach(npc => {
+            minimapCtx.fillStyle = npc.color;
+            minimapCtx.fillRect(npc.x * scale, npc.y * scale, npc.width * scale, npc.height * scale);
+        });
+    }
+
+    // Draw portals
+    map.portals.forEach(portal => {
+        minimapCtx.fillStyle = portal.color;
+        minimapCtx.fillRect(portal.x * scale, portal.y * scale, tileSize * scale, tileSize * scale);
+    });
+}
+
 function draw() {
     if (gamePaused) return;
     const map = maps[currentMapId];
@@ -587,7 +630,8 @@ function draw() {
     uiY += lineHeight;
     ctx.fillText(`${getTranslation('job')}: ${getTranslation(player.job)}`, uiX, uiY);
     uiY += lineHeight;
-    ctx.fillText(`${getTranslation('potions')}: ${getKeyDisplayName(keyMap.potion)} key`, uiX, uiY);
+        ctx.fillText(`${getTranslation('potions')}: ${getKeyDisplayName(keyMap.potion)} key`, uiX, uiY);
+    drawMinimap();
 }
 
 function levelUp() {
@@ -990,10 +1034,6 @@ function handlePlayerAttack() {
 
 function startReturnToTown() {
     if (player.isReturning) return; // Prevent multiple activations
-    if (currentMapId === 'overworld') { // Already in town
-        alert(getTranslation('already_in_town')); // Need to add this translation
-        return;
-    }
 
     player.isReturning = true;
     player.returnTimer = 1000; // 1 second countdown
