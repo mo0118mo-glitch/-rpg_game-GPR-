@@ -1,4 +1,4 @@
-const jobs = ['warrior', 'mage', 'priest', 'thief', 'gunslinger'];
+const jobs = ['warrior', 'mage', 'priest', 'thief', 'gunner'];
 
 const initialMonsters = {
     slime: { id: 1, name: '슬라임', width: 32, height: 32, color: 'red', hp: 6, maxHp: 6, attack: 5, gold: 10, speed: 1, detectionRange: 200, exp: 3, lastDirection: 'down' },
@@ -33,7 +33,7 @@ const skills = {
         strong: { name: '은신', manaCost: 15, duration: 5000, cooldown: 10000, description: '5초간 몬스터에게 어그로가 끌리지 않습니다.' },
         ultimate: { name: '암살', manaCost: 30, damage: 30, cooldown: 0, description: '단일 대상에게 30의 치명적인 물리 데미지를 입힙니다.', damageType: 'physical' }
     },
-    'gunslinger': {
+    'gunner': {
         weak: { name: '더블 탭', manaCost: 0, damage: 4, cooldown: 4000, description: '빠르게 2발을 발사합니다.', damageType: 'physical' },
         strong: { name: '헤드샷', manaCost: 0, damage: 12, cooldown: 10000, description: '강력한 한 발을 발사합니다.', damageType: 'physical' },
         ultimate: { name: '난사', manaCost: 0, duration: 5000, cooldown: 0, description: '5초간 전방으로 자동 사격합니다.', damageType: 'physical' }
@@ -52,28 +52,28 @@ const shopItems = [
     { id: 'staff', name: '쓸수는 있는 지팡이', description: '마법사 전용. 마법 공격력 7.', price: 100, job: 'mage', attack: 7, damageType: 'magic', rank: 'usable' },
     { id: 'cross', name: '쓸수는 있는 십자가', description: '성직자 전용. 공격력 7.', price: 100, job: 'priest', attack: 7, damageType: 'hybrid', rank: 'usable' },
     { id: 'dagger', name: '쓸수는 있는 단검', description: '도적 전용. 물리 공격력 7.', price: 100, job: 'thief', attack: 7, damageType: 'physical', rank: 'usable' },
-    { id: 'gun', name: '쓸수는 있는 총', description: '건슬링어 전용. 물리 공격력 7.', price: 100, job: 'gunslinger', attack: 7, damageType: 'physical', rank: 'usable' },
+    { id: 'gun', name: '쓸수는 있는 총', description: '거너 전용. 물리 공격력 7.', price: 100, job: 'gunner', attack: 7, damageType: 'physical', rank: 'usable' },
 
     // Decent Series (Rank 2)
     { id: 'decent_sword', name: '쓸만한 검', description: '검사 전용. 물리 공격력 10.5.', price: 200, job: 'warrior', attack: 10.5, damageType: 'physical', rank: 'decent' },
     { id: 'decent_staff', name: '쓸만한 지팡이', description: '마법사 전용. 마법 공격력 10.5.', price: 200, job: 'mage', attack: 10.5, damageType: 'magic', rank: 'decent' },
     { id: 'decent_cross', name: '쓸만한 십자가', description: '성직자 전용. 공격력 10.5.', price: 200, job: 'priest', attack: 10.5, damageType: 'hybrid', rank: 'decent' },
     { id: 'decent_dagger', name: '쓸만한 단검', description: '도적 전용. 물리 공격력 10.5.', price: 200, job: 'thief', attack: 10.5, damageType: 'physical', rank: 'decent' },
-    { id: 'decent_gun', name: '쓸만한 총', description: '건슬링어 전용. 물리 공격력 10.5.', price: 200, job: 'gunslinger', attack: 10.5, damageType: 'physical', rank: 'decent' },
+    { id: 'decent_gun', name: '쓸만한 총', description: '거너 전용. 물리 공격력 10.5.', price: 200, job: 'gunner', attack: 10.5, damageType: 'physical', rank: 'decent' },
 
     // Powerful Series (Rank 3)
     { id: 'powerful_sword', name: '강력한 검', description: '검사 전용. 물리 공격력 20.', price: 500, job: 'warrior', attack: 20, damageType: 'physical', rank: 'powerful' },
     { id: 'powerful_staff', name: '강력한 지팡이', description: '마법사 전용. 마법 공격력 20.', price: 500, job: 'mage', attack: 20, damageType: 'magic', rank: 'powerful' },
     { id: 'powerful_cross', name: '강력한 십자가', description: '성직자 전용. 공격력 20.', price: 500, job: 'priest', attack: 20, damageType: 'hybrid', rank: 'powerful' },
     { id: 'powerful_dagger', name: '강력한 단검', description: '도적 전용. 물리 공격력 20.', price: 500, job: 'thief', attack: 20, damageType: 'physical', rank: 'powerful' },
-    { id: 'powerful_gun', name: '강력한 총', description: '건슬링어 전용. 물리 공격력 20.', price: 500, job: 'gunslinger', attack: 20, damageType: 'physical', rank: 'powerful' },
+    { id: 'powerful_gun', name: '강력한 총', description: '거너 전용. 물리 공격력 20.', price: 500, job: 'gunner', attack: 20, damageType: 'physical', rank: 'powerful' },
 
     // Legendary Series (Rank 4)
     { id: 'legendary_sword', name: '전설적인 검', description: '검사 전용. 물리 공격력 50.', price: 2000, job: 'warrior', attack: 50, damageType: 'physical', rank: 'legendary' },
     { id: 'legendary_staff', name: '전설적인 지팡이', description: '마법사 전용. 마법 공격력 50.', price: 2000, job: 'mage', attack: 50, damageType: 'magic', rank: 'legendary' },
     { id: 'legendary_cross', name: '전설적인 십자가', description: '성직자 전용. 공격력 50.', price: 2000, job: 'priest', attack: 50, damageType: 'hybrid', rank: 'legendary' },
     { id: 'legendary_dagger', name: '전설적인 단검', description: '도적 전용. 물리 공격력 50.', price: 2000, job: 'thief', attack: 50, damageType: 'physical', rank: 'legendary' },
-    { id: 'legendary_gun', name: '전설적인 총', description: '건슬링어 전용. 물리 공격력 50.', price: 2000, job: 'gunslinger', attack: 50, damageType: 'physical', rank: 'legendary' }
+    { id: 'legendary_gun', name: '전설적인 총', description: '거너 전용. 물리 공격력 50.', price: 2000, job: 'gunner', attack: 50, damageType: 'physical', rank: 'legendary' }
 ];
 
 const weapons = {
@@ -81,7 +81,7 @@ const weapons = {
     'mage': { shape: 'triangle', color: 'lightblue', width: 20, height: 20 },
     'priest': { shape: 'cross', color: 'white', width: 20, height: 20 },
     'thief': { shape: 'sword', color: 'brown', width: 6, height: 20 },
-    'gunslinger': { shape: 'gun', color: 'black', width: 20, height: 10 }
+    'gunner': { shape: 'gun', color: 'black', width: 20, height: 10 }
 };
 
 window.shopItems = shopItems;

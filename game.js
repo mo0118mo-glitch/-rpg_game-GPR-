@@ -942,7 +942,7 @@ function update() {
 function handlePlayerAttack() {
     if (player.attackCooldown > 0) return;
 
-    if (player.job === 'gunslinger') {
+    if (player.job === 'gunner') {
         player.attackCooldown = 1000; // 1 second cooldown
         const projectileSpeed = 10;
         let dx = 0, dy = 0;
@@ -1014,7 +1014,7 @@ function useSkill(skillType) {
     if (!skill) return;
     if (player.skillCooldowns[skillType] > 0) return;
 
-    if (player.job !== 'gunslinger') {
+    if (player.job !== 'gunner') {
         if (player.mana < skill.manaCost) {
             alert(getTranslation('no_mana'));
             return;
@@ -1317,7 +1317,7 @@ function useSkill(skillType) {
                         return;
                     }
                 }
-            } else if (player.job === 'gunslinger') {
+            } else if (player.job === 'gunner') {
                 if (skillType === 'weak') {
                     const projectileSpeed = 15;
                     let dx = 0, dy = 0;
@@ -1495,7 +1495,7 @@ function interactWithNpc(npc) {
         if (confirm('이게 바로 이세카이에서 가져온 무기일세 살탠가? (776 골드)')) {
             if (player.gold >= 776) {
                 player.gold -= 776;
-                player.job = 'gunslinger';
+                player.job = 'gunner';
                 player.skills = {
                     weak: null,
                     strong: null,
