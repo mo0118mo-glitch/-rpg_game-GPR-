@@ -952,11 +952,18 @@ function handlePlayerAttack() {
             case 'left': dx = -projectileSpeed; break;
             case 'right': dx = projectileSpeed; break;
         }
+                let width = 30;
+        let height = 10;
+        if (player.lastDirection === 'up' || player.lastDirection === 'down') {
+            width = 10;
+            height = 30;
+        }
+
         activeAttacks.push({
-            x: player.x + player.width / 2 - 15,
-            y: player.y + player.height / 2 - 5,
-            width: 30,
-            height: 10,
+            x: player.x + player.width / 2 - width / 2,
+            y: player.y + player.height / 2 - height / 2,
+            width: width,
+            height: height,
             color: 'white',
             damage: 4,
             damageType: 'physical',
@@ -1491,7 +1498,7 @@ function interactWithNpc(npc) {
         openEquipmentRandomModal();
     } else if (npc.name === '거울') {
         openMirrorModal();
-    } else if (npc.name === '이세카이') {
+        } else if (npc.name === '이세카이') {
         if (confirm('이게 바로 이세카이에서 가져온 무기일세 살탠가? (776 골드)')) {
             if (player.gold >= 776) {
                 player.gold -= 776;
@@ -1501,6 +1508,19 @@ function interactWithNpc(npc) {
                     strong: null,
                     ultimate: null
                 };
+
+                const legendaryGun = shopItems.find(item => item.id === 'legendary_gun');
+                if (legendaryGun) {
+                    const currentWeapon = Object.keys(player.inventory).find(key => shopItems.find(si => si.id === key && si.job === player.job));
+                    if (currentWeapon) {
+                        const oldWeapon = shopItems.find(i => i.id === currentWeapon);
+                        player.attack -= oldWeapon.attack;
+                        delete player.inventory[currentWeapon];
+                    }
+                    player.inventory[legendaryGun.id] = 1;
+                    player.attack += legendaryGun.attack;
+                }
+                
                 alert('이세계에 전설의 물건을 얻었다');
             } else {
                 alert('골드가 부족합니다.');
