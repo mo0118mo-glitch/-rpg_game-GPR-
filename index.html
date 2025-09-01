@@ -79,19 +79,16 @@
     <div id="random-modal" class="modal">
         <div class="modal-content">
             <span id="close-random-btn" class="close-btn">&times;</span>
-            <h2>랜덤박스</h2>
+            <h2>돈뽑기</h2>
             <p>소지금: <span id="player-gold-random">0</span> 골드</p>
             <div id="random-options">
-                <button class="random-btn" data-cost="100">100 골드</button>
-                <button class="random-btn" data-cost="1000">1000 골드</button>
-                <button class="random-btn" data-cost="10000">10000 골드</button>
-                <button class="random-btn" data-cost="100000">100000 골드</button>
+                <button class="random-btn" data-cost="100">돈주고 돈받기</button>
             </div>
             <div id="random-result"></div>
         </div>
     </div>
 
-    <!-- Rift Modal -->
+        <!-- Rift Modal -->
     <div id="rift-modal" class="modal">
         <div class="modal-content">
             <span id="close-rift-btn" class="close-btn">&times;</span>
@@ -99,6 +96,36 @@
             <div id="rift-options">
                 <button class="rift-option-btn" data-choice="gpr">진짜 GPR (5000G)</button>
                 <button class="rift-option-btn" data-choice="blue_jewel">푸른 보석 (5000G)</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Equipment Random Modal -->
+    <div id="equipment-random-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-equipment-random-btn" class="close-btn">&times;</span>
+            <h2>장비 랜덤 박스</h2>
+            <p>소지금: <span id="player-gold-equipment-random">0</span> 골드</p>
+            <div id="equipment-random-options">
+                <button class="equipment-random-btn" data-cost="500">500 골드</button>
+            </div>
+            <div id="equipment-random-result"></div>
+        </div>
+    </div>
+
+    <!-- Mirror Modal -->
+    <div id="mirror-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-mirror-btn" class="close-btn">&times;</span>
+            <h2>거울</h2>
+            <div id="mirror-container">
+                <canvas id="player-preview-canvas" width="100" height="100"></canvas>
+                <div id="color-palette">
+                    <h3>몸 색깔</h3>
+                    <div class="color-options" id="body-color-options"></div>
+                    <h3>눈 색깔</h3>
+                    <div class="color-options" id="eye-color-options"></div>
+                </div>
             </div>
         </div>
     </div>

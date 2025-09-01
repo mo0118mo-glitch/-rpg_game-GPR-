@@ -56,7 +56,7 @@ let gameMode = 'normal'; // 'easy' or 'normal'
 
 const player = {
     x: 0, y: 0, // 시작 위치는 init에서 설정
-    width: 32, height: 32, color: 'white', speed: 4, hp: 100, maxHp: 100, 
+    width: 32, height: 32, speed: 4, hp: 100, maxHp: 100, 
     mana: 50, maxMana: 50, manaRegenTimer: 0,
     ultimateGauge: 0, maxUltimateGauge: 100,
     level: 1,
@@ -81,7 +81,9 @@ const player = {
     returnTimer: 0,
     returnEffect: null,
     unlocked_gpr: false,
-    unlocked_blue_jewel: false
+    unlocked_blue_jewel: false,
+    bodyColor: '#FFFFFF',
+    eyeColor: '#000000'
 };
 
 let monsters = [];
@@ -89,6 +91,7 @@ const deadMonsters = [];
 let nextMonsterId = 1;
 const activeAttacks = [];
 const activeGroundEffects = [];
+const activeTrailEffects = [];
 const camera = { x: 0, y: 0, width: canvas.width, height: canvas.height };
 let backgroundCanvas = null; // 오버월드 배경용
 let isekaiNpc = null;
@@ -125,12 +128,14 @@ function createMap(cols, rows, wallProbability = 0) {
 const maps = {
     overworld: {
         layout: createMap(70, 70),
-        npcs: [
+                npcs: [
             { id: 1, name: 'merchant', x: (35 + 2) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'purple', lastDirection: 'down' },
             { id: 2, name: 'job_master', x: (35 + 8) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'cyan', lastDirection: 'down' },
             { id: 4, name: 'skill_master', x: (35 + 5) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'yellow', lastDirection: 'down' },
             { id: 3, name: 'reset_master', x: (35 + 14) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
             { id: 5, name: '랜덤관', x: (35 + 8) * tileSize, y: 40 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' },
+            { id: 7, name: '장비랜덤', x: (35 + 18) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'blue', lastDirection: 'down' },
+            { id: 8, name: '거울', x: (35 - 8) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'gray', lastDirection: 'down' },
             { id: 6, name: '공간을 가르는 자', x: 68 * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'white', lastDirection: 'down' }
         ],
         monsters: [],
@@ -435,7 +440,7 @@ function draw() {
     });
 
     if (map.npcs) {
-        const npcsWithHouses = ['merchant', 'job_master', 'reset_master', '랜덤관'];
+                                                                                                const npcsWithHouses = ['merchant', 'job_master', 'reset_master', '랜덤관', '장비랜덤', '거울'];
         map.npcs.forEach(npc => {
             if (npcsWithHouses.includes(npc.name)) drawHouse(npc);
         });
@@ -507,12 +512,28 @@ function draw() {
         ctx.fillText(timeLeft, player.x + player.width / 2, player.y - 30);
     }
 
+        activeTrailEffects.forEach(effect => {
+        ctx.fillStyle = effect.color;
+        ctx.beginPath();
+        ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
     if (player.isStealthed) {
         ctx.globalAlpha = 0.5;
     }
 
-    ctx.fillStyle = player.color;
+        ctx.fillStyle = player.bodyColor;
     ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Draw eyes
+    ctx.fillStyle = player.eyeColor;
+    const eyeSize = 5;
+    const eyeX1 = player.x + 8;
+    const eyeX2 = player.x + player.width - 8 - eyeSize;
+    const eyeY = player.y + 8;
+    ctx.fillRect(eyeX1, eyeY, eyeSize, eyeSize);
+    ctx.fillRect(eyeX2, eyeY, eyeSize, eyeSize);
     drawPlayerWeapon(ctx);
     drawDirectionDots(ctx, player);
 
@@ -737,6 +758,41 @@ function update() {
         }
         actionState.interact = false;
     }
+        // Handle trail effects
+    const currentWeaponId = Object.keys(player.inventory).find(key => shopItems.find(si => si.id === key && si.job === player.job));
+    if (currentWeaponId) {
+        const currentWeapon = shopItems.find(item => item.id === currentWeaponId);
+        if (currentWeapon && ['decent', 'powerful', 'legendary'].includes(currentWeapon.rank)) {
+            let color;
+            switch (currentWeapon.rank) {
+                case 'decent':
+                    color = 'green';
+                    break;
+                case 'powerful':
+                    color = 'red';
+                    break;
+                case 'legendary':
+                    color = 'yellow';
+                    break;
+            }
+            activeTrailEffects.push({
+                x: player.x + player.width / 2,
+                y: player.y + player.height / 2,
+                radius: 5,
+                color: color,
+                createdAt: Date.now(),
+                duration: 5000
+            });
+        }
+    }
+
+    for (let i = activeTrailEffects.length - 1; i >= 0; i--) {
+        const effect = activeTrailEffects[i];
+        if (Date.now() - effect.createdAt >= effect.duration) {
+            activeTrailEffects.splice(i, 1);
+        }
+    }
+
     if (actionState.attack) {
         handlePlayerAttack();
         actionState.attack = false;
@@ -1428,9 +1484,13 @@ function interactWithNpc(npc) {
         }
     } else if (npc.name === 'skill_master') {
         openSkillModal();
-    } else if (npc.name === '랜덤관') {
+                } else if (npc.name === '랜덤관') {
         alert('랜덤박스~랜덤박스~랜덤박스~랜덤박스~ 무엇이 나올까용?');
         openRandomModal();
+        } else if (npc.name === '장비랜덤') {
+        openEquipmentRandomModal();
+    } else if (npc.name === '거울') {
+        openMirrorModal();
     } else if (npc.name === '이세카이') {
         if (confirm('이게 바로 이세카이에서 가져온 무기일세 살탠가? (776 골드)')) {
             if (player.gold >= 776) {
@@ -1555,6 +1615,18 @@ const playerGoldRandom = document.getElementById('player-gold-random');
 const randomOptions = document.getElementById('random-options');
 const randomResult = document.getElementById('random-result');
 
+const equipmentRandomModal = document.getElementById('equipment-random-modal');
+const closeEquipmentRandomBtn = document.getElementById('close-equipment-random-btn');
+const playerGoldEquipmentRandom = document.getElementById('player-gold-equipment-random');
+const equipmentRandomOptions = document.getElementById('equipment-random-options');
+const equipmentRandomResult = document.getElementById('equipment-random-result');
+
+const mirrorModal = document.getElementById('mirror-modal');
+const closeMirrorBtn = document.getElementById('close-mirror-btn');
+const playerPreviewCanvas = document.getElementById('player-preview-canvas');
+const bodyColorOptions = document.getElementById('body-color-options');
+const eyeColorOptions = document.getElementById('eye-color-options');
+
 const riftModal = document.getElementById('rift-modal');
 const closeRiftBtn = document.getElementById('close-rift-btn');
 const riftOptions = document.getElementById('rift-options');
@@ -1629,6 +1701,126 @@ function openRandomModal() {
 function closeRandomModal() {
     randomModal.style.display = 'none';
     gamePaused = false;
+}
+
+function openEquipmentRandomModal() {
+    playerGoldEquipmentRandom.textContent = player.gold;
+    equipmentRandomResult.textContent = '';
+    equipmentRandomModal.style.display = 'flex';
+    gamePaused = true;
+}
+
+function closeEquipmentRandomModal() {
+    equipmentRandomModal.style.display = 'none';
+    gamePaused = false;
+}
+
+function openMirrorModal() {
+    mirrorModal.style.display = 'flex';
+    gamePaused = true;
+    drawPlayerPreview();
+    populateColorOptions();
+}
+
+function closeMirrorModal() {
+    mirrorModal.style.display = 'none';
+    gamePaused = false;
+}
+
+function drawPlayerPreview() {
+    const ctx = playerPreviewCanvas.getContext('2d');
+    ctx.clearRect(0, 0, playerPreviewCanvas.width, playerPreviewCanvas.height);
+    
+    // Draw body
+    ctx.fillStyle = player.bodyColor;
+    ctx.fillRect(25, 25, 50, 50);
+
+    // Draw eyes
+    ctx.fillStyle = player.eyeColor;
+    ctx.fillRect(35, 35, 10, 10);
+    ctx.fillRect(55, 35, 10, 10);
+}
+
+function populateColorOptions() {
+    const bodyColors = ['#FFFFFF', '#DDDDDD', '#AAAAAA', '#777777', '#444444', '#111111'];
+    const eyeColors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black'];
+
+    bodyColorOptions.innerHTML = '';
+    bodyColors.forEach(color => {
+        const colorOption = document.createElement('div');
+        colorOption.className = 'color-option';
+        colorOption.style.backgroundColor = color;
+        colorOption.addEventListener('click', () => {
+            player.bodyColor = color;
+            checkEyeColor();
+            drawPlayerPreview();
+        });
+        bodyColorOptions.appendChild(colorOption);
+    });
+
+    eyeColorOptions.innerHTML = '';
+    eyeColors.forEach(color => {
+        const colorOption = document.createElement('div');
+        colorOption.className = 'color-option';
+        colorOption.style.backgroundColor = color;
+        colorOption.addEventListener('click', () => {
+            player.eyeColor = color;
+            checkEyeColor();
+            drawPlayerPreview();
+        });
+        eyeColorOptions.appendChild(colorOption);
+    });
+}
+
+function checkEyeColor() {
+    if (player.bodyColor === '#111111' && player.eyeColor === '#111111') {
+        player.eyeColor = 'black';
+    }
+}
+
+function playEquipmentRandom(cost) {
+    if (player.gold < cost) {
+        equipmentRandomResult.textContent = getTranslation('not_enough_gold');
+        return;
+    }
+
+    player.gold -= cost;
+
+    const rand = Math.random();
+    let rank;
+    if (rand < 0.4) {
+        rank = 'usable';
+    } else if (rand < 0.9) {
+        rank = 'decent';
+    } else if (rand < 0.999) {
+        rank = 'powerful';
+    } else {
+        rank = 'legendary';
+    }
+
+    const availableWeapons = shopItems.filter(item => item.rank === rank && item.job === player.job);
+
+    if (availableWeapons.length === 0) {
+        equipmentRandomResult.textContent = "뽑을 수 있는 장비가 없습니다.";
+        player.gold += cost; // 환불
+        return;
+    }
+
+    const randomWeapon = availableWeapons[Math.floor(Math.random() * availableWeapons.length)];
+
+    const currentWeapon = Object.keys(player.inventory).find(key => shopItems.find(si => si.id === key && si.job === player.job));
+    if (currentWeapon) {
+        const oldWeapon = shopItems.find(i => i.id === currentWeapon);
+        player.attack -= oldWeapon.attack;
+        delete player.inventory[currentWeapon];
+    }
+
+    player.inventory[randomWeapon.id] = 1;
+    player.attack += randomWeapon.attack;
+    equipmentRandomResult.textContent = `${randomWeapon.name}을(를) 획득했습니다!`;
+    
+    playerGoldEquipmentRandom.textContent = player.gold;
+    savePlayerState(currentUser);
 }
 
 function openRiftModal() {
@@ -1838,7 +2030,15 @@ window.addEventListener('DOMContentLoaded', () => {
     closePotionBtn.addEventListener('click', closePotionModal);
     closeSkillBtn.addEventListener('click', closeSkillModal);
     closeRandomBtn.addEventListener('click', closeRandomModal);
-    closeRiftBtn.addEventListener('click', closeRiftModal);
+        closeRiftBtn.addEventListener('click', closeRiftModal);
+        closeEquipmentRandomBtn.addEventListener('click', closeEquipmentRandomModal);
+    closeMirrorBtn.addEventListener('click', closeMirrorModal);
+    document.querySelectorAll('.equipment-random-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const cost = parseInt(e.target.dataset.cost);
+            playEquipmentRandom(cost);
+        });
+    });
     document.querySelectorAll('.random-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             const cost = parseInt(e.target.dataset.cost);
@@ -1869,7 +2069,9 @@ window.addEventListener('DOMContentLoaded', () => {
             if (potionModal.style.display === 'flex') closePotionModal();
             if (skillModal.style.display === 'flex') closeSkillModal();
             if (shopModal.style.display === 'flex') closeShop();
-            if (randomModal.style.display === 'flex') closeRandomModal();
+                        if (randomModal.style.display === 'flex') closeRandomModal();
+                        if (equipmentRandomModal.style.display === 'flex') closeEquipmentRandomModal();
+            if (mirrorModal.style.display === 'flex') closeMirrorModal();
             if (riftModal.style.display === 'flex') closeRiftModal();
         }
     });
