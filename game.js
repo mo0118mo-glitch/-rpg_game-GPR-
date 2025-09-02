@@ -474,6 +474,17 @@ function draw() {
         }
     }
 
+    if (player.unlocked_blue_jewel) {
+        const mapWidth = map.layout[0].length * tileSize;
+        const wallX = mapWidth - tileSize;
+        const wallY = Math.floor(map.layout.length / 2) * tileSize;
+
+        ctx.fillStyle = 'blue';
+        ctx.beginPath();
+        ctx.ellipse(wallX + tileSize / 2, wallY, tileSize / 4, tileSize * 2, 0, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
     map.portals.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, tileSize, tileSize);
