@@ -1,4 +1,5 @@
 let currentUser = null;
+let showMinimap = true;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -140,12 +141,7 @@ const maps = {
             { id: 6, name: '공간을 가르는 자', x: 68 * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'white', lastDirection: 'down' }
         ],
         monsters: [],
-        portals: [
-            { name: 'slime_dungeon', x: (35 + 10) * tileSize + 560, y: 35 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'goblin_dungeon', x: (35 + 12) * tileSize + 560, y: 35 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'orc_dungeon', x: (35 + 14) * tileSize + 560, y: 35 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'subspecies_dungeon', x: (35 + 16) * tileSize + 560, y: 35 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
-        ],
+        portals: [],
         blueJewelPortal: {
             x: (70 - 1) * tileSize,
             y: Math.floor(70 / 2) * tileSize - tileSize * 2,
@@ -182,6 +178,30 @@ const maps = {
         portals: [{ name: 'exit', x: 2 * tileSize, y: 43 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     }
 };
+
+function randomizePortals() {
+    const mapLayout = maps.overworld.layout;
+    const mapWidth = mapLayout[0].length;
+    const mapHeight = mapLayout.length;
+
+    function getRandomPosition() {
+        let x, y, tileX, tileY;
+        do {
+            x = Math.floor(Math.random() * (mapWidth - 2)) + 1;
+            y = Math.floor(Math.random() * (mapHeight - 2)) + 1;
+            tileX = Math.floor(x);
+            tileY = Math.floor(y);
+        } while (mapLayout[tileY][tileX] === 1); // Ensure it's not on a wall
+        return { x: x * tileSize, y: y * tileSize };
+    }
+
+    maps.overworld.portals = [
+        { name: 'slime_dungeon', ...getRandomPosition(), targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+        { name: 'goblin_dungeon', ...getRandomPosition(), targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+        { name: 'orc_dungeon', ...getRandomPosition(), targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+        { name: 'subspecies_dungeon', ...getRandomPosition(), targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
+    ];
+}
 
 // --- 입력 처리 ---
 let changingKeyFor = null;
@@ -445,6 +465,12 @@ function drawMinimap() {
         minimapCtx.fillStyle = portal.color;
         minimapCtx.fillRect(portal.x * scale, portal.y * scale, tileSize * scale, tileSize * scale);
     });
+
+    // Draw monsters
+    minimapCtx.fillStyle = 'red';
+    monsters.forEach(monster => {
+        minimapCtx.fillRect(monster.x * scale, monster.y * scale, 2, 2);
+    });
 }
 
 function draw() {
@@ -642,7 +668,9 @@ function draw() {
     ctx.fillText(`${getTranslation('job')}: ${getTranslation(player.job)}`, uiX, uiY);
     uiY += lineHeight;
         ctx.fillText(`${getTranslation('potions')}: ${getKeyDisplayName(keyMap.potion)} key`, uiX, uiY);
-    drawMinimap();
+    if (showMinimap) {
+        drawMinimap();
+    }
 }
 
 function levelUp() {
@@ -2013,6 +2041,14 @@ function updateUIText() {
     document.getElementById('settings-button').textContent = getTranslation('settings');
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleMinimapButton = document.getElementById('toggle-minimap-button');
+    toggleMinimapButton.addEventListener('click', () => {
+        showMinimap = !showMinimap;
+    });
+
+    randomizePortals();
+});
 
 const blueJewelModal = document.getElementById('blue-jewel-modal');
 const blueJewelYesBtn = document.getElementById('blue-jewel-yes');
