@@ -587,14 +587,7 @@ function draw() {
         ctx.fillStyle = player.bodyColor;
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
-    // Draw eyes
-    ctx.fillStyle = player.eyeColor;
-    const eyeSize = 5;
-    const eyeX1 = player.x + 8;
-    const eyeX2 = player.x + player.width - 8 - eyeSize;
-    const eyeY = player.y + 8;
-    ctx.fillRect(eyeX1, eyeY, eyeSize, eyeSize);
-    ctx.fillRect(eyeX2, eyeY, eyeSize, eyeSize);
+    
     drawPlayerWeapon(ctx);
     drawDirectionDots(ctx, player);
 
