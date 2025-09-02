@@ -1,3 +1,4 @@
+let currentUser = null;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -144,7 +145,13 @@ const maps = {
             { name: 'goblin_dungeon', x: (35 + 12) * tileSize + 560, y: 35 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
             { name: 'orc_dungeon', x: (35 + 14) * tileSize + 560, y: 35 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
             { name: 'subspecies_dungeon', x: (35 + 16) * tileSize + 560, y: 35 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
-        ]
+        ],
+        blueJewelPortal: {
+            x: (70 - 1) * tileSize,
+            y: Math.floor(70 / 2) * tileSize - tileSize * 2,
+            width: tileSize,
+            height: tileSize * 4
+        }
     },
     slimeDungeon: {
         layout: createMap(40, 40, 0),
@@ -801,6 +808,13 @@ function update() {
             changeMap(p);
         }
     });
+
+    if (player.unlocked_blue_jewel && currentMapId === 'overworld') {
+        const blueJewelPortal = maps.overworld.blueJewelPortal;
+        if (isColliding(player, blueJewelPortal)) {
+            openBlueJewelModal();
+        }
+    }
 
     if (actionState.interact) {
         if(currentMap.npcs) {
@@ -2009,141 +2023,67 @@ function loadKeyMap() {
 
 function updateUIText() {
     document.getElementById('settings-button').textContent = getTranslation('settings');
-    document.querySelector('#settings-modal h2').textContent = getTranslation('settings');
-    document.querySelector('#potion-modal h2').textContent = getTranslation('potions');
-    document.querySelector('#skill-modal h2').textContent = 'Skills'; // TODO: Add to languages.js
-    document.querySelector('#shop-modal h2').textContent = getTranslation('merchant');
-    populateKeybindList();
 }
 
-function gameLoop() {
-    if (!gamePaused) {
-        update();
-        draw();
-    }
-    requestAnimationFrame(gameLoop);
+
+const blueJewelModal = document.getElementById('blue-jewel-modal');
+const blueJewelYesBtn = document.getElementById('blue-jewel-yes');
+const blueJewelNoBtn = document.getElementById('blue-jewel-no');
+
+function openBlueJewelModal() {
+    gamePaused = true;
+    blueJewelModal.style.display = 'flex';
 }
 
-function init() {
-    currentUser = sessionStorage.getItem('currentUser');
-    loadKeyMap();
-    loadPlayerState(currentUser); // Load saved state first
-    preloadImages();
-
-    if (player.hp <= 0) {
-        player.hp = player.maxHp;
-    }
-
-    // Now, explicitly set player position to village, overriding saved position if it exists
-    player.x = (maps.overworld.layout[0].length / 2) * tileSize;
-    player.y = (maps.overworld.layout.length / 2) * tileSize;
-    currentMapId = 'overworld'; // Ensure map is overworld
-    createOverworldBackground();
-    spawnMonsters();
-    gameLoop();
-    updateUIText(); 
+function closeBlueJewelModal() {
+    blueJewelModal.style.display = 'none';
+    gamePaused = false;
 }
 
-function startGame() {
-    const nicknameInput = document.getElementById('nickname-input');
-    const nickname = nicknameInput.value.trim();
+blueJewelNoBtn.addEventListener('click', closeBlueJewelModal);
 
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('game-wrapper').style.display = 'block';
-    init();
+blueJewelYesBtn.addEventListener('click', () => {
+    // Convert items to "usable" rank
+    for (const itemId in player.inventory) {
+        const item = shopItems.find(i => i.id === itemId);
+        if (item && item.job && item.rank !== 'usable') { // It's a weapon and not already usable
+            const usableWeapon = shopItems.find(i => i.job === item.job && i.rank === 'usable');
+            if (usableWeapon) {
+                // Remove old weapon's attack bonus
+                if (item.damageType === 'physical') {
+                    player.physicalAttack -= item.attack;
+                } else if (item.damageType === 'magic') {
+                    player.magicAttack -= item.attack;
+                } else if (item.damageType === 'hybrid') {
+                    player.physicalAttack -= item.attack;
+                    player.magicAttack -= item.attack;
+                }
+                delete player.inventory[itemId];
 
-    if (nickname) {
-        player.nickname = nickname;
-    }
-}
-
-const settingsButton = document.getElementById('settings-button');
-const settingsModal = document.getElementById('settings-modal');
-const closeSettingsBtn = document.getElementById('close-settings-btn');
-const keybindList = document.getElementById('keybind-list');
-const languageSelect = document.getElementById('language-select');
-
-languageSelect.addEventListener('change', (e) => {
-    currentLanguage = e.target.value;
-    updateUIText();
-});
-
-function openSettingsModal() {
-    populateKeybindList();
-    settingsModal.style.display = 'flex';
-}
-
-function closeSettingsModal() {
-    settingsModal.style.display = 'none';
-    changingKeyFor = null;
-}
-
-function populateKeybindList() {
-    keybindList.innerHTML = '';
-    for (const action in keyMap) {
-        const div = document.createElement('div');
-        div.innerHTML = `<span>${getTranslation(actionTranslations[action])}: </span><button class="keybind-button" data-action="${action}">${getKeyDisplayName(keyMap[action])}</button>`;
-        keybindList.appendChild(div);
-    }
-    document.querySelectorAll('.keybind-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            if (changingKeyFor) return;
-            changingKeyFor = e.target.dataset.action;
-            e.target.textContent = '...';
-        });
-    });
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('start-button').addEventListener('click', startGame);
-    settingsButton.addEventListener('click', openSettingsModal);
-    closeSettingsBtn.addEventListener('click', closeSettingsModal);
-    closePotionBtn.addEventListener('click', closePotionModal);
-    closeSkillBtn.addEventListener('click', closeSkillModal);
-    closeRandomBtn.addEventListener('click', closeRandomModal);
-        closeRiftBtn.addEventListener('click', closeRiftModal);
-        closeEquipmentRandomBtn.addEventListener('click', closeEquipmentRandomModal);
-    closeMirrorBtn.addEventListener('click', closeMirrorModal);
-    document.querySelectorAll('.equipment-random-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const cost = parseInt(e.target.dataset.cost);
-            playEquipmentRandom(cost);
-        });
-    });
-    document.querySelectorAll('.random-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const cost = parseInt(e.target.dataset.cost);
-            playRandom(cost);
-        });
-    });
-    document.getElementById('return-to-town-button').addEventListener('click', startReturnToTown); // New line
-    document.getElementById('spawn-npc-button').addEventListener('click', () => {
-        const input = prompt('스폰 조건을 입력하세요:');
-        if (input === '대화수단' || input === 'eoghktneks') {
-            spawnIsekaiNpc();
-        } else if (input === 'sunsunsunsunsun') {
-            player.gold += 50000;
-            alert('50000 골드를 획득했습니다!');
+                // Add new weapon's attack bonus
+                player.inventory[usableWeapon.id] = 1;
+                if (usableWeapon.damageType === 'physical') {
+                    player.physicalAttack += usableWeapon.attack;
+                } else if (usableWeapon.damageType === 'magic') {
+                    player.magicAttack += usableWeapon.attack;
+                } else if (usableWeapon.damageType === 'hybrid') {
+                    player.physicalAttack += usableWeapon.attack;
+                    player.magicAttack += usableWeapon.attack;
+                }
+            }
         }
-    });
+    }
 
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const settingsModal = document.getElementById('settings-modal');
-            const potionModal = document.getElementById('potion-modal');
-            const skillModal = document.getElementById('skill-modal');
-            const shopModal = document.getElementById('shop-modal');
-            const randomModal = document.getElementById('random-modal');
-            const riftModal = document.getElementById('rift-modal');
+    // Get user credentials from localStorage
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+    const password = users[currentUser] ? users[currentUser].password : '';
 
-            if (settingsModal.style.display === 'flex') closeSettingsModal();
-            if (potionModal.style.display === 'flex') closePotionModal();
-            if (skillModal.style.display === 'flex') closeSkillModal();
-            if (shopModal.style.display === 'flex') closeShop();
-                        if (randomModal.style.display === 'flex') closeRandomModal();
-                        if (equipmentRandomModal.style.display === 'flex') closeEquipmentRandomModal();
-            if (mirrorModal.style.display === 'flex') closeMirrorModal();
-            if (riftModal.style.display === 'flex') closeRiftModal();
-        }
-    });
+    // Redirect with player data
+    const playerData = {
+        ...player,
+        username: currentUser,
+        password: password
+    };
+    const encodedData = btoa(JSON.stringify(playerData));
+    window.location.href = `https://park-seo-jun.github.io/blue/?data=${encodedData}`;
 });

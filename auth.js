@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('login-button');
     const registerButton = document.getElementById('register-button');
 
-    let currentUser = null;
+    currentUser = null;
 
     function registerUser(username, password) {
         if (!username || !password) {
