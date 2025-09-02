@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPR</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-screen">
+        <h1>GPR</h1>
+        <input type="text" id="username-input" placeholder="사용자 이름">
+        <input type="password" id="password-input" placeholder="비밀번호">
+        <button id="login-button">로그인</button>
+        <button id="register-button">회원가입</button>
+    </div>
+
+    <div id="start-screen" style="display: none;">
+        <input type="text" id="nickname-input" placeholder="닉네임을 입력하세요">
+    <div class="game-mode-selection">
+        <label><input type="radio" name="gameMode" value="easy" checked> 이지 모드</label>
+        <label><input type="radio" name="gameMode" value="hard"> 하드 모드</label>
+    </div>
+    <button id="start-button">게임 시작</button>
+    </div>
+
+        <div id="game-wrapper" style="display: none;">
+        <canvas id="minimapCanvas" width="200" height="200" style="position: absolute; top: 10px; right: 10px; border: 1px solid black;"></canvas>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <button id="settings-button">설정</button>
+        <button id="return-to-town-button">귀환</button>
+        <button id="spawn-npc-button">???</button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-settings-btn" class="close-btn">&times;</span>
+            <h2>설정</h2>
+            <div class="setting-item">
+                <label for="language-select">언어:</label>
+                <select id="language-select">
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    
+                    <option value="ja">日本語</option>
+                </select>
+            </div>
+            <div id="keybind-list"></div>
+        </div>
+    </div>
+
+    <!-- Potion Modal -->
+    <div id="potion-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-potion-btn" class="close-btn">&times;</span>
+            <h2>물약을 선택하세요</h2>
+            <div id="potion-list"></div>
+        </div>
+    </div>
+
+    <!-- Skill Modal -->
+    <div id="skill-modal" class="modal">
+        <div class="modal-content">
+            <h2>스킬 <span id="close-skill-btn" class="close-btn">&times;</span></h2>
+            <div id="skill-list"></div>
+        </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div id="shop-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>상점 <span id="close-shop-btn" class="close-btn">&times;</span></h2>
+            <p>소지금: <span id="player-gold">0</span> 골드</p>
+            <div id="item-list"></div>
+        </div>
+    </div>
+
+    <!-- Random Modal -->
+    <div id="random-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-random-btn" class="close-btn">&times;</span>
+            <h2>돈뽑기</h2>
+            <p>소지금: <span id="player-gold-random">0</span> 골드</p>
+            <div id="random-options">
+                <button class="random-btn" data-cost="100">돈주고 돈받기</button>
+            </div>
+            <div id="random-result"></div>
+        </div>
+    </div>
+
+        <!-- Rift Modal -->
+    <div id="rift-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-rift-btn" class="close-btn">&times;</span>
+            <h2>어디로가실래유?</h2>
+            <div id="rift-options">
+                <button class="rift-option-btn" data-choice="gpr">진짜 GPR (5000G)</button>
+                <button class="rift-option-btn" data-choice="blue_jewel">푸른 보석 (5000G)</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Equipment Random Modal -->
+    <div id="equipment-random-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-equipment-random-btn" class="close-btn">&times;</span>
+            <h2>장비 랜덤 박스</h2>
+            <p>소지금: <span id="player-gold-equipment-random">0</span> 골드</p>
+            <div id="equipment-random-options">
+                <button class="equipment-random-btn" data-cost="500">500 골드</button>
+            </div>
+            <div id="equipment-random-result"></div>
+        </div>
+    </div>
+
+    <!-- Mirror Modal -->
+    <div id="mirror-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-mirror-btn" class="close-btn">&times;</span>
+            <h2>거울</h2>
+            <div id="mirror-container">
+                <canvas id="player-preview-canvas" width="100" height="100"></canvas>
+                <div id="color-palette">
+                    <h3>몸 색깔</h3>
+                    <div class="color-options" id="body-color-options"></div>
+                    <h3>눈 색깔</h3>
+                    <div class="color-options" id="eye-color-options"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="languages.js"></script>
+    <script src="data.js"></script>
+    <script src="auth.js"></script>
+    <script src="shop.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
