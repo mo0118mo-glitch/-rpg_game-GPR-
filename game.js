@@ -1819,11 +1819,6 @@ function drawPlayerPreview() {
     // Draw body
     ctx.fillStyle = player.bodyColor;
     ctx.fillRect(25, 25, 50, 50);
-
-    // Draw eyes
-    ctx.fillStyle = player.eyeColor;
-    ctx.fillRect(35, 35, 10, 10);
-    ctx.fillRect(55, 35, 10, 10);
 }
 
 function populateColorOptions() {
