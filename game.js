@@ -70,7 +70,8 @@ const player = {
     physicalAttack: 1, // Base physical attack
     magicAttack: 0,    // Base magic attack
     gold: 0, 
-    inventory: { potion: 0, smallPotion: 0 }, 
+    inventory: { potion: 0, smallPotion: 0, weapons: [] }, 
+    tradeBlockedUntil: 0, 
     lastDirection: 'right', 
     attackCooldown: 0, 
     damageCooldown: 0,
