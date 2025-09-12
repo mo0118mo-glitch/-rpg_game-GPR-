@@ -85,8 +85,7 @@ const player = {
     returnEffect: null,
     unlocked_gpr: false,
     unlocked_blue_jewel: false,
-    bodyColor: '#FFFFFF',
-    eyeColor: '#000000'
+    
 };
 
 let monsters = [];
@@ -138,7 +137,7 @@ const maps = {
             { id: 3, name: 'reset_master', x: (35 + 14) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
             { id: 5, name: '랜덤관', x: (35 + 8) * tileSize, y: 40 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' },
             { id: 7, name: '장비랜덤', x: (35 + 18) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'blue', lastDirection: 'down' },
-            { id: 8, name: '거울', x: (35 - 8) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'gray', lastDirection: 'down' },
+            
             { id: 6, name: '공간을 가르는 자', x: 68 * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'white', lastDirection: 'down' }
         ],
         monsters: [],
@@ -598,7 +597,7 @@ function draw() {
         ctx.globalAlpha = 0.5;
     }
 
-        ctx.fillStyle = player.bodyColor;
+        ctx.fillStyle = 'white';
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
     
@@ -1570,9 +1569,7 @@ function interactWithNpc(npc) {
         openRandomModal();
         } else if (npc.name === '장비랜덤') {
         openEquipmentRandomModal();
-    } else if (npc.name === '거울') {
-        openMirrorModal();
-        } else if (npc.name === '이세카이') {
+     else if (npc.name === '이세카이') {
         if (confirm('이게 바로 이세카이에서 가져온 무기일세 살탠가? (776 골드)')) {
             if (player.gold >= 776) {
                 player.gold -= 776;
@@ -1715,11 +1712,7 @@ const playerGoldEquipmentRandom = document.getElementById('player-gold-equipment
 const equipmentRandomOptions = document.getElementById('equipment-random-options');
 const equipmentRandomResult = document.getElementById('equipment-random-result');
 
-const mirrorModal = document.getElementById('mirror-modal');
-const closeMirrorBtn = document.getElementById('close-mirror-btn');
-const playerPreviewCanvas = document.getElementById('player-preview-canvas');
-const bodyColorOptions = document.getElementById('body-color-options');
-const eyeColorOptions = document.getElementById('eye-color-options');
+
 
 const riftModal = document.getElementById('rift-modal');
 const closeRiftBtn = document.getElementById('close-rift-btn');
@@ -1809,63 +1802,7 @@ function closeEquipmentRandomModal() {
     gamePaused = false;
 }
 
-function openMirrorModal() {
-    mirrorModal.style.display = 'flex';
-    gamePaused = true;
-    drawPlayerPreview();
-    populateColorOptions();
-}
 
-function closeMirrorModal() {
-    mirrorModal.style.display = 'none';
-    gamePaused = false;
-}
-
-function drawPlayerPreview() {
-    const ctx = playerPreviewCanvas.getContext('2d');
-    ctx.clearRect(0, 0, playerPreviewCanvas.width, playerPreviewCanvas.height);
-    
-    // Draw body
-    ctx.fillStyle = player.bodyColor;
-    ctx.fillRect(25, 25, 50, 50);
-}
-
-function populateColorOptions() {
-    const bodyColors = ['#FFFFFF', '#DDDDDD', '#AAAAAA', '#777777', '#444444', '#111111'];
-    const eyeColors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black'];
-
-    bodyColorOptions.innerHTML = '';
-    bodyColors.forEach(color => {
-        const colorOption = document.createElement('div');
-        colorOption.className = 'color-option';
-        colorOption.style.backgroundColor = color;
-        colorOption.addEventListener('click', () => {
-            player.bodyColor = color;
-            checkEyeColor();
-            drawPlayerPreview();
-        });
-        bodyColorOptions.appendChild(colorOption);
-    });
-
-    eyeColorOptions.innerHTML = '';
-    eyeColors.forEach(color => {
-        const colorOption = document.createElement('div');
-        colorOption.className = 'color-option';
-        colorOption.style.backgroundColor = color;
-        colorOption.addEventListener('click', () => {
-            player.eyeColor = color;
-            checkEyeColor();
-            drawPlayerPreview();
-        });
-        eyeColorOptions.appendChild(colorOption);
-    });
-}
-
-function checkEyeColor() {
-    if (player.bodyColor === '#111111' && player.eyeColor === '#111111') {
-        player.eyeColor = 'black';
-    }
-}
 
 function playEquipmentRandom(cost) {
     if (player.gold < cost) {
