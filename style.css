@@ -524,34 +524,7 @@ canvas {
     text-align: center;
 }
 
-#mirror-container {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
 
-#player-preview-canvas {
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
-}
-
-#color-palette {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.color-options {
-    display: flex;
-    gap: 5px;
-}
-
-.color-option {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-}
 
 #rift-options {
     display: flex;
