@@ -514,7 +514,7 @@ function draw() {
     });
 
     if (map.npcs) {
-                                                                                                const npcsWithHouses = ['merchant', 'job_master', 'reset_master', '랜덤관', '장비랜덤', '거울'];
+                                                                                                const npcsWithHouses = ['merchant', 'job_master', 'reset_master', '랜덤관', '장비랜덤'];
         map.npcs.forEach(npc => {
             if (npcsWithHouses.includes(npc.name)) drawHouse(npc);
         });
