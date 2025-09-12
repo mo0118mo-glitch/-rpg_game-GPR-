@@ -563,7 +563,7 @@ function draw() {
             ctx.fillStyle = m.color;
             ctx.fillRect(m.x, m.y, m.width, m.height);
         }
-        drawDirectionDots(ctx, m);
+        // drawDirectionDots(ctx, m);
         ctx.fillStyle = 'red';
         ctx.fillRect(m.x, m.y - 10, m.width, 5);
         ctx.fillStyle = 'lime';
@@ -573,7 +573,7 @@ function draw() {
         map.npcs.forEach(npc => {
             ctx.fillStyle = npc.color;
             ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
-            drawDirectionDots(ctx, npc);
+            // drawDirectionDots(ctx, npc);
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             ctx.fillText(getTranslation(npc.name), npc.x + npc.width / 2, npc.y - 5);
@@ -616,7 +616,7 @@ function draw() {
 
     
     drawPlayerWeapon(ctx);
-    drawDirectionDots(ctx, player);
+    // drawDirectionDots(ctx, player);
 
     if (player.isStealthed) {
         ctx.globalAlpha = 1.0;
