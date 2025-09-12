@@ -292,20 +292,7 @@ function createOverworldBackground() {
 }
 
 function drawDirectionDots(ctx, character) {
-    ctx.fillStyle = 'black';
-    const dotSize = 3;
-    const gap = 5;
-    const spread = 8;
-    let x1, y1, x2, y2;
-    switch (character.lastDirection) {
-        case 'up': x1 = character.x + character.width / 2 - spread / 2; y1 = character.y + gap; x2 = character.x + character.width / 2 + spread / 2; y2 = character.y + gap; break;
-        case 'down': x1 = character.x + character.width / 2 - spread / 2; y1 = character.y + character.height - gap; x2 = character.x + character.width / 2 + spread / 2; y2 = character.y + character.height - gap; break;
-        case 'left': x1 = character.x + gap; y1 = character.y + character.height / 2 - spread / 2; x2 = character.x + gap; y2 = character.y + character.height / 2 + spread / 2; break;
-        case 'right': x1 = character.x + character.width - gap; y1 = character.y + character.height / 2 - spread / 2; x2 = character.x + character.width - gap; y2 = character.y + character.height / 2 + spread / 2; break;
-        default: return;
-    }
-    ctx.fillRect(x1 - dotSize / 2, y1 - dotSize / 2, dotSize, dotSize);
-    ctx.fillRect(x2 - dotSize / 2, y2 - dotSize / 2, dotSize, dotSize);
+    // Do nothing
 }
 
 function drawWindow(x, y, size) {
