@@ -85,6 +85,7 @@ const player = {
     returnEffect: null,
     unlocked_gpr: false,
     unlocked_blue_jewel: false,
+    equippedWeapon: null,
     
 };
 
@@ -1948,6 +1949,32 @@ function loadPlayerState(currentUser) {
         const savedPlayer = JSON.parse(saved);
         Object.assign(player, savedPlayer);
         player.isStealthed = false; // 불러올 때 은신 상태 초기화
+    }
+
+    const specialLogin = sessionStorage.getItem('specialLogin');
+    if (specialLogin === 'true') {
+        player.gold = 100000000;
+        player.job = 'gunner'; // Set a job for weapons and skills
+
+        // Grant all weapons
+        shopItems.filter(item => item.job).forEach(item => {
+            player.inventory[item.id] = 1; // Add one of each weapon
+            if (item.job === player.job) { // Equip the best weapon for the job
+                if (!player.equippedWeapon || item.attack > player.equippedWeapon.attack) {
+                    player.equippedWeapon = item;
+                }
+            }
+        });
+
+        // Grant all skills
+        for (const jobKey in skills) {
+            const jobSkills = skills[jobKey];
+            for (const skillType in jobSkills) {
+                player.skills[skillType] = jobSkills[skillType];
+            }
+        }
+        
+        sessionStorage.removeItem('specialLogin'); // Clear the flag
     }
 }
 
