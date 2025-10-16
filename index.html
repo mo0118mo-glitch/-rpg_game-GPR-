@@ -28,6 +28,7 @@
         <canvas id="minimapCanvas" width="200" height="200" style="position: absolute; top: 10px; right: 10px; border: 1px solid black;"></canvas>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <button id="settings-button">설정</button>
+        <button id="toggle-minimap-button">미니맵</button>
         <button id="return-to-town-button">귀환</button>
         <button id="spawn-npc-button">???</button>
     </div>
@@ -70,11 +71,37 @@
     <!-- Shop Modal -->
     <div id="shop-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h2>상점 <span id="close-shop-btn" class="close-btn">&times;</span></h2>
+            <span id="close-shop-btn" class="close-btn">&times;</span>
+            <h2>상점</h2>
+            <div id="shop-tabs">
+                <button id="buy-tab" class="shop-tab active">구매</button>
+                <button id="sell-tab" class="shop-tab">판매</button>
+            </div>
             <p>소지금: <span id="player-gold">0</span> 골드</p>
-            <div id="item-list"></div>
+            <div id="item-list" class="shop-view"></div>
+            <div id="sell-view" class="shop-view" style="display: none;">
+                <h3>내 인벤토리 (무기)</h3>
+                <div id="sell-inventory-list"></div>
+                <div id="sell-details" style="display: none;">
+                    <p>선택된 아이템: <span id="selected-sell-item-name"></span></p>
+                    <p>판매 가격: <span id="sell-price"></span> 골드</p>
+                    <button id="sell-item-btn">판매</button>
+                    <button id="bargain-btn">흥정</button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Inventory Modal -->
+    <div id="inventory-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span id="close-inventory-btn" class="close-btn">&times;</span>
+            <h2>인벤토리</h2>
+            <div id="inventory-list"></div>
+        </div>
+    </div>
+
+    <img src="https://img.icons8.com/ios-filled/50/000000/backpack.png" id="backpack-icon" alt="인벤토리"/>
 
     <!-- Random Modal -->
     <div id="random-modal" class="modal">
@@ -101,6 +128,15 @@
         </div>
     </div>
 
+    <!-- Blue Jewel Modal -->
+    <div id="blue-jewel-modal" class="modal">
+        <div class="modal-content">
+            <p>이동하시겠습니까?</p>
+            <button id="blue-jewel-yes">예</button>
+            <button id="blue-jewel-no">아니오</button>
+        </div>
+    </div>
+
         <!-- Equipment Random Modal -->
     <div id="equipment-random-modal" class="modal">
         <div class="modal-content">
@@ -114,22 +150,7 @@
         </div>
     </div>
 
-    <!-- Mirror Modal -->
-    <div id="mirror-modal" class="modal">
-        <div class="modal-content">
-            <span id="close-mirror-btn" class="close-btn">&times;</span>
-            <h2>거울</h2>
-            <div id="mirror-container">
-                <canvas id="player-preview-canvas" width="100" height="100"></canvas>
-                <div id="color-palette">
-                    <h3>몸 색깔</h3>
-                    <div class="color-options" id="body-color-options"></div>
-                    <h3>눈 색깔</h3>
-                    <div class="color-options" id="eye-color-options"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <script src="languages.js"></script>
     <script src="data.js"></script>
