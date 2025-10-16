@@ -46,6 +46,7 @@ const shopItems = [
     { id: 'manaPotionSmall', name: '작은 마나 물약', description: '마나를 5 회복합니다.', price: 5, type: 'mana', heal: 5 },
     { id: 'manaPotionMedium', name: '중간 마나 물약', description: '마나를 50 회복합니다.', price: 20, type: 'mana', heal: 50 },
     { id: 'manaPotionLarge', name: '큰 마나 물약', description: '마나를 100 회복합니다.', price: 50, type: 'mana', heal: 100 },
+    { id: 'blueGem', name: '푸른보석', description: '푸른보석으로 갈수있는 포탈을 엽니다.', price: 1000, type: 'portal_key' },
 
     // Usable Series (Rank 1)
     { id: 'sword', name: '쓸수는 있는 검', description: '검사 전용. 물리 공격력 7.', price: 100, job: 'warrior', attack: 7, damageType: 'physical', rank: 'usable' },

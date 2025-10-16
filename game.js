@@ -1,3 +1,5 @@
+let currentUser = null;
+let showMinimap = true;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -68,7 +70,8 @@ const player = {
     physicalAttack: 1, // Base physical attack
     magicAttack: 0,    // Base magic attack
     gold: 0, 
-    inventory: { potion: 0, smallPotion: 0 }, 
+    inventory: { potion: 0, smallPotion: 0, weapons: [] }, 
+    tradeBlockedUntil: 0, 
     lastDirection: 'right', 
     attackCooldown: 0, 
     damageCooldown: 0,
@@ -82,8 +85,8 @@ const player = {
     returnEffect: null,
     unlocked_gpr: false,
     unlocked_blue_jewel: false,
-    bodyColor: '#FFFFFF',
-    eyeColor: '#000000'
+    equippedWeapon: null,
+    
 };
 
 let monsters = [];
@@ -135,16 +138,17 @@ const maps = {
             { id: 3, name: 'reset_master', x: (35 + 14) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'orange', lastDirection: 'down' },
             { id: 5, name: '랜덤관', x: (35 + 8) * tileSize, y: 40 * tileSize, width: 32, height: 32, color: 'green', lastDirection: 'down' },
             { id: 7, name: '장비랜덤', x: (35 + 18) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'blue', lastDirection: 'down' },
-            { id: 8, name: '거울', x: (35 - 8) * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'gray', lastDirection: 'down' },
+            
             { id: 6, name: '공간을 가르는 자', x: 68 * tileSize, y: 35 * tileSize, width: 32, height: 32, color: 'white', lastDirection: 'down' }
         ],
         monsters: [],
-        portals: [
-            { name: 'slime_dungeon', x: (35 + 10) * tileSize + 560, y: 35 * tileSize, targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'goblin_dungeon', x: (35 + 12) * tileSize + 560, y: 35 * tileSize, targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'orc_dungeon', x: (35 + 14) * tileSize + 560, y: 35 * tileSize, targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
-            { name: 'subspecies_dungeon', x: (35 + 16) * tileSize + 560, y: 35 * tileSize, targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
-        ]
+        portals: [],
+        blueJewelPortal: {
+            x: (70 - 1) * tileSize,
+            y: Math.floor(70 / 2) * tileSize - tileSize * 2,
+            width: tileSize,
+            height: tileSize * 4
+        }
     },
     slimeDungeon: {
         layout: createMap(40, 40, 0),
@@ -175,6 +179,30 @@ const maps = {
         portals: [{ name: 'exit', x: 2 * tileSize, y: 43 * tileSize, targetMapId: 'overworld', targetX: -1, targetY: -1, color: 'lightblue' }]
     }
 };
+
+function randomizePortals() {
+    const mapLayout = maps.overworld.layout;
+    const mapWidth = mapLayout[0].length;
+    const mapHeight = mapLayout.length;
+
+    function getRandomPosition() {
+        let x, y, tileX, tileY;
+        do {
+            x = Math.floor(Math.random() * (mapWidth - 2)) + 1;
+            y = Math.floor(Math.random() * (mapHeight - 2)) + 1;
+            tileX = Math.floor(x);
+            tileY = Math.floor(y);
+        } while (mapLayout[tileY][tileX] === 1); // Ensure it's not on a wall
+        return { x: x * tileSize, y: y * tileSize };
+    }
+
+    maps.overworld.portals = [
+        { name: 'slime_dungeon', ...getRandomPosition(), targetMapId: 'slimeDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+        { name: 'goblin_dungeon', ...getRandomPosition(), targetMapId: 'goblinDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+        { name: 'orc_dungeon', ...getRandomPosition(), targetMapId: 'orcDungeon', targetX: 2 * tileSize, targetY: 17 * tileSize, color: '#696969' },
+        { name: 'subspecies_dungeon', ...getRandomPosition(), targetMapId: 'subspeciesDungeon', targetX: 2 * tileSize, targetY: 22 * tileSize, color: 'black' },
+    ];
+}
 
 // --- 입력 처리 ---
 let changingKeyFor = null;
@@ -264,20 +292,7 @@ function createOverworldBackground() {
 }
 
 function drawDirectionDots(ctx, character) {
-    ctx.fillStyle = 'black';
-    const dotSize = 3;
-    const gap = 5;
-    const spread = 8;
-    let x1, y1, x2, y2;
-    switch (character.lastDirection) {
-        case 'up': x1 = character.x + character.width / 2 - spread / 2; y1 = character.y + gap; x2 = character.x + character.width / 2 + spread / 2; y2 = character.y + gap; break;
-        case 'down': x1 = character.x + character.width / 2 - spread / 2; y1 = character.y + character.height - gap; x2 = character.x + character.width / 2 + spread / 2; y2 = character.y + character.height - gap; break;
-        case 'left': x1 = character.x + gap; y1 = character.y + character.height / 2 - spread / 2; x2 = character.x + gap; y2 = character.y + character.height / 2 + spread / 2; break;
-        case 'right': x1 = character.x + character.width - gap; y1 = character.y + character.height / 2 - spread / 2; x2 = character.x + character.width - gap; y2 = character.y + character.height / 2 + spread / 2; break;
-        default: return;
-    }
-    ctx.fillRect(x1 - dotSize / 2, y1 - dotSize / 2, dotSize, dotSize);
-    ctx.fillRect(x2 - dotSize / 2, y2 - dotSize / 2, dotSize, dotSize);
+    // Do nothing
 }
 
 function drawWindow(x, y, size) {
@@ -438,6 +453,20 @@ function drawMinimap() {
         minimapCtx.fillStyle = portal.color;
         minimapCtx.fillRect(portal.x * scale, portal.y * scale, tileSize * scale, tileSize * scale);
     });
+
+    if (player.unlocked_blue_jewel) {
+        const blueJewelPortal = maps.overworld.blueJewelPortal;
+        minimapCtx.fillStyle = 'blue';
+        minimapCtx.beginPath();
+        minimapCtx.ellipse(blueJewelPortal.x * scale + (blueJewelPortal.width * scale / 2), blueJewelPortal.y * scale + (blueJewelPortal.height * scale / 2), blueJewelPortal.width * scale / 2, blueJewelPortal.height * scale / 4, 0, 0, 2 * Math.PI);
+        minimapCtx.fill();
+    }
+
+    // Draw monsters
+    minimapCtx.fillStyle = 'red';
+    monsters.forEach(monster => {
+        minimapCtx.fillRect(monster.x * scale, monster.y * scale, 2, 2);
+    });
 }
 
 function draw() {
@@ -474,6 +503,14 @@ function draw() {
         }
     }
 
+    if (player.unlocked_blue_jewel) {
+        const blueJewelPortal = maps.overworld.blueJewelPortal;
+        ctx.fillStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(blueJewelPortal.x + blueJewelPortal.width / 2, blueJewelPortal.y + blueJewelPortal.height / 2, blueJewelPortal.width / 2, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
     map.portals.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, tileSize, tileSize);
@@ -483,7 +520,7 @@ function draw() {
     });
 
     if (map.npcs) {
-                                                                                                const npcsWithHouses = ['merchant', 'job_master', 'reset_master', '랜덤관', '장비랜덤', '거울'];
+                                                                                                const npcsWithHouses = ['merchant', 'job_master', 'reset_master', '랜덤관', '장비랜덤'];
         map.npcs.forEach(npc => {
             if (npcsWithHouses.includes(npc.name)) drawHouse(npc);
         });
@@ -518,7 +555,7 @@ function draw() {
             ctx.fillStyle = m.color;
             ctx.fillRect(m.x, m.y, m.width, m.height);
         }
-        drawDirectionDots(ctx, m);
+        // drawDirectionDots(ctx, m);
         ctx.fillStyle = 'red';
         ctx.fillRect(m.x, m.y - 10, m.width, 5);
         ctx.fillStyle = 'lime';
@@ -528,7 +565,7 @@ function draw() {
         map.npcs.forEach(npc => {
             ctx.fillStyle = npc.color;
             ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
-            drawDirectionDots(ctx, npc);
+            // drawDirectionDots(ctx, npc);
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             ctx.fillText(getTranslation(npc.name), npc.x + npc.width / 2, npc.y - 5);
@@ -566,19 +603,12 @@ function draw() {
         ctx.globalAlpha = 0.5;
     }
 
-        ctx.fillStyle = player.bodyColor;
+        ctx.fillStyle = 'white';
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
-    // Draw eyes
-    ctx.fillStyle = player.eyeColor;
-    const eyeSize = 5;
-    const eyeX1 = player.x + 8;
-    const eyeX2 = player.x + player.width - 8 - eyeSize;
-    const eyeY = player.y + 8;
-    ctx.fillRect(eyeX1, eyeY, eyeSize, eyeSize);
-    ctx.fillRect(eyeX2, eyeY, eyeSize, eyeSize);
+    
     drawPlayerWeapon(ctx);
-    drawDirectionDots(ctx, player);
+    // drawDirectionDots(ctx, player);
 
     if (player.isStealthed) {
         ctx.globalAlpha = 1.0;
@@ -631,7 +661,9 @@ function draw() {
     ctx.fillText(`${getTranslation('job')}: ${getTranslation(player.job)}`, uiX, uiY);
     uiY += lineHeight;
         ctx.fillText(`${getTranslation('potions')}: ${getKeyDisplayName(keyMap.potion)} key`, uiX, uiY);
-    drawMinimap();
+    if (showMinimap) {
+        drawMinimap();
+    }
 }
 
 function levelUp() {
@@ -790,6 +822,13 @@ function update() {
             changeMap(p);
         }
     });
+
+    if (player.unlocked_blue_jewel && currentMapId === 'overworld') {
+        const blueJewelPortal = maps.overworld.blueJewelPortal;
+        if (isColliding(player, blueJewelPortal)) {
+            window.location.href = 'https://park-seo-jun.github.io/blue/';
+        }
+    }
 
     if (actionState.interact) {
         if(currentMap.npcs) {
@@ -1536,9 +1575,7 @@ function interactWithNpc(npc) {
         openRandomModal();
         } else if (npc.name === '장비랜덤') {
         openEquipmentRandomModal();
-    } else if (npc.name === '거울') {
-        openMirrorModal();
-        } else if (npc.name === '이세카이') {
+     else if (npc.name === '이세카이') {
         if (confirm('이게 바로 이세카이에서 가져온 무기일세 살탠가? (776 골드)')) {
             if (player.gold >= 776) {
                 player.gold -= 776;
@@ -1681,11 +1718,7 @@ const playerGoldEquipmentRandom = document.getElementById('player-gold-equipment
 const equipmentRandomOptions = document.getElementById('equipment-random-options');
 const equipmentRandomResult = document.getElementById('equipment-random-result');
 
-const mirrorModal = document.getElementById('mirror-modal');
-const closeMirrorBtn = document.getElementById('close-mirror-btn');
-const playerPreviewCanvas = document.getElementById('player-preview-canvas');
-const bodyColorOptions = document.getElementById('body-color-options');
-const eyeColorOptions = document.getElementById('eye-color-options');
+
 
 const riftModal = document.getElementById('rift-modal');
 const closeRiftBtn = document.getElementById('close-rift-btn');
@@ -1775,68 +1808,7 @@ function closeEquipmentRandomModal() {
     gamePaused = false;
 }
 
-function openMirrorModal() {
-    mirrorModal.style.display = 'flex';
-    gamePaused = true;
-    drawPlayerPreview();
-    populateColorOptions();
-}
 
-function closeMirrorModal() {
-    mirrorModal.style.display = 'none';
-    gamePaused = false;
-}
-
-function drawPlayerPreview() {
-    const ctx = playerPreviewCanvas.getContext('2d');
-    ctx.clearRect(0, 0, playerPreviewCanvas.width, playerPreviewCanvas.height);
-    
-    // Draw body
-    ctx.fillStyle = player.bodyColor;
-    ctx.fillRect(25, 25, 50, 50);
-
-    // Draw eyes
-    ctx.fillStyle = player.eyeColor;
-    ctx.fillRect(35, 35, 10, 10);
-    ctx.fillRect(55, 35, 10, 10);
-}
-
-function populateColorOptions() {
-    const bodyColors = ['#FFFFFF', '#DDDDDD', '#AAAAAA', '#777777', '#444444', '#111111'];
-    const eyeColors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black'];
-
-    bodyColorOptions.innerHTML = '';
-    bodyColors.forEach(color => {
-        const colorOption = document.createElement('div');
-        colorOption.className = 'color-option';
-        colorOption.style.backgroundColor = color;
-        colorOption.addEventListener('click', () => {
-            player.bodyColor = color;
-            checkEyeColor();
-            drawPlayerPreview();
-        });
-        bodyColorOptions.appendChild(colorOption);
-    });
-
-    eyeColorOptions.innerHTML = '';
-    eyeColors.forEach(color => {
-        const colorOption = document.createElement('div');
-        colorOption.className = 'color-option';
-        colorOption.style.backgroundColor = color;
-        colorOption.addEventListener('click', () => {
-            player.eyeColor = color;
-            checkEyeColor();
-            drawPlayerPreview();
-        });
-        eyeColorOptions.appendChild(colorOption);
-    });
-}
-
-function checkEyeColor() {
-    if (player.bodyColor === '#111111' && player.eyeColor === '#111111') {
-        player.eyeColor = 'black';
-    }
-}
 
 function playEquipmentRandom(cost) {
     if (player.gold < cost) {
@@ -1924,10 +1896,6 @@ function unlockRift(choice) {
         player.gold -= 5000;
         player.unlocked_gpr = true;
         alert('진짜 GPR이 열렸습니다.');
-    } else if (choice === 'blue_jewel' && !player.unlocked_blue_jewel) {
-        player.gold -= 5000;
-        player.unlocked_blue_jewel = true;
-        alert('푸른 보석이 열렸습니다.');
     }
     savePlayerState(currentUser);
     closeRiftModal();
@@ -1983,6 +1951,32 @@ function loadPlayerState(currentUser) {
         Object.assign(player, savedPlayer);
         player.isStealthed = false; // 불러올 때 은신 상태 초기화
     }
+
+    const specialLogin = sessionStorage.getItem('specialLogin');
+    if (specialLogin === 'true') {
+        player.gold = 100000000;
+        player.job = 'gunner'; // Set a job for weapons and skills
+
+        // Grant all weapons
+        shopItems.filter(item => item.job).forEach(item => {
+            player.inventory[item.id] = 1; // Add one of each weapon
+            if (item.job === player.job) { // Equip the best weapon for the job
+                if (!player.equippedWeapon || item.attack > player.equippedWeapon.attack) {
+                    player.equippedWeapon = item;
+                }
+            }
+        });
+
+        // Grant all skills
+        for (const jobKey in skills) {
+            const jobSkills = skills[jobKey];
+            for (const skillType in jobSkills) {
+                player.skills[skillType] = jobSkills[skillType];
+            }
+        }
+        
+        sessionStorage.removeItem('specialLogin'); // Clear the flag
+    }
 }
 
 function saveKeyMap() {
@@ -1998,141 +1992,75 @@ function loadKeyMap() {
 
 function updateUIText() {
     document.getElementById('settings-button').textContent = getTranslation('settings');
-    document.querySelector('#settings-modal h2').textContent = getTranslation('settings');
-    document.querySelector('#potion-modal h2').textContent = getTranslation('potions');
-    document.querySelector('#skill-modal h2').textContent = 'Skills'; // TODO: Add to languages.js
-    document.querySelector('#shop-modal h2').textContent = getTranslation('merchant');
-    populateKeybindList();
 }
 
-function gameLoop() {
-    if (!gamePaused) {
-        update();
-        draw();
-    }
-    requestAnimationFrame(gameLoop);
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleMinimapButton = document.getElementById('toggle-minimap-button');
+    toggleMinimapButton.addEventListener('click', () => {
+        showMinimap = !showMinimap;
+    });
 
-function init() {
-    currentUser = sessionStorage.getItem('currentUser');
-    loadKeyMap();
-    loadPlayerState(currentUser); // Load saved state first
-    preloadImages();
-
-    if (player.hp <= 0) {
-        player.hp = player.maxHp;
-    }
-
-    // Now, explicitly set player position to village, overriding saved position if it exists
-    player.x = (maps.overworld.layout[0].length / 2) * tileSize;
-    player.y = (maps.overworld.layout.length / 2) * tileSize;
-    currentMapId = 'overworld'; // Ensure map is overworld
-    createOverworldBackground();
-    spawnMonsters();
-    gameLoop();
-    updateUIText(); 
-}
-
-function startGame() {
-    const nicknameInput = document.getElementById('nickname-input');
-    const nickname = nicknameInput.value.trim();
-
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('game-wrapper').style.display = 'block';
-    init();
-
-    if (nickname) {
-        player.nickname = nickname;
-    }
-}
-
-const settingsButton = document.getElementById('settings-button');
-const settingsModal = document.getElementById('settings-modal');
-const closeSettingsBtn = document.getElementById('close-settings-btn');
-const keybindList = document.getElementById('keybind-list');
-const languageSelect = document.getElementById('language-select');
-
-languageSelect.addEventListener('change', (e) => {
-    currentLanguage = e.target.value;
-    updateUIText();
+    randomizePortals();
 });
 
-function openSettingsModal() {
-    populateKeybindList();
-    settingsModal.style.display = 'flex';
+const blueJewelModal = document.getElementById('blue-jewel-modal');
+const blueJewelYesBtn = document.getElementById('blue-jewel-yes');
+const blueJewelNoBtn = document.getElementById('blue-jewel-no');
+
+function openBlueJewelModal() {
+    gamePaused = true;
+    blueJewelModal.style.display = 'flex';
 }
 
-function closeSettingsModal() {
-    settingsModal.style.display = 'none';
-    changingKeyFor = null;
+function closeBlueJewelModal() {
+    blueJewelModal.style.display = 'none';
+    gamePaused = false;
 }
 
-function populateKeybindList() {
-    keybindList.innerHTML = '';
-    for (const action in keyMap) {
-        const div = document.createElement('div');
-        div.innerHTML = `<span>${getTranslation(actionTranslations[action])}: </span><button class="keybind-button" data-action="${action}">${getKeyDisplayName(keyMap[action])}</button>`;
-        keybindList.appendChild(div);
+blueJewelNoBtn.addEventListener('click', closeBlueJewelModal);
+
+blueJewelYesBtn.addEventListener('click', () => {
+    // Convert items to "usable" rank
+    for (const itemId in player.inventory) {
+        const item = shopItems.find(i => i.id === itemId);
+        if (item && item.job && item.rank !== 'usable') { // It's a weapon and not already usable
+            const usableWeapon = shopItems.find(i => i.job === item.job && i.rank === 'usable');
+            if (usableWeapon) {
+                // Remove old weapon's attack bonus
+                if (item.damageType === 'physical') {
+                    player.physicalAttack -= item.attack;
+                } else if (item.damageType === 'magic') {
+                    player.magicAttack -= item.attack;
+                } else if (item.damageType === 'hybrid') {
+                    player.physicalAttack -= item.attack;
+                    player.magicAttack -= item.attack;
+                }
+                delete player.inventory[itemId];
+
+                // Add new weapon's attack bonus
+                player.inventory[usableWeapon.id] = 1;
+                if (usableWeapon.damageType === 'physical') {
+                    player.physicalAttack += usableWeapon.attack;
+                } else if (usableWeapon.damageType === 'magic') {
+                    player.magicAttack += usableWeapon.attack;
+                } else if (usableWeapon.damageType === 'hybrid') {
+                    player.physicalAttack += usableWeapon.attack;
+                    player.magicAttack += usableWeapon.attack;
+                }
+            }
+        }
     }
-    document.querySelectorAll('.keybind-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            if (changingKeyFor) return;
-            changingKeyFor = e.target.dataset.action;
-            e.target.textContent = '...';
-        });
-    });
-}
 
-window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('start-button').addEventListener('click', startGame);
-    settingsButton.addEventListener('click', openSettingsModal);
-    closeSettingsBtn.addEventListener('click', closeSettingsModal);
-    closePotionBtn.addEventListener('click', closePotionModal);
-    closeSkillBtn.addEventListener('click', closeSkillModal);
-    closeRandomBtn.addEventListener('click', closeRandomModal);
-        closeRiftBtn.addEventListener('click', closeRiftModal);
-        closeEquipmentRandomBtn.addEventListener('click', closeEquipmentRandomModal);
-    closeMirrorBtn.addEventListener('click', closeMirrorModal);
-    document.querySelectorAll('.equipment-random-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const cost = parseInt(e.target.dataset.cost);
-            playEquipmentRandom(cost);
-        });
-    });
-    document.querySelectorAll('.random-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const cost = parseInt(e.target.dataset.cost);
-            playRandom(cost);
-        });
-    });
-    document.getElementById('return-to-town-button').addEventListener('click', startReturnToTown); // New line
-    document.getElementById('spawn-npc-button').addEventListener('click', () => {
-        const input = prompt('스폰 조건을 입력하세요:');
-        if (input === '대화수단' || input === 'eoghktneks') {
-            spawnIsekaiNpc();
-        } else if (input === 'sunsunsunsunsun') {
-            player.gold += 50000;
-            alert('50000 골드를 획득했습니다!');
-        }
-    });
+    // Get user credentials from localStorage
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+    const password = users[currentUser] ? users[currentUser].password : '';
 
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const settingsModal = document.getElementById('settings-modal');
-            const potionModal = document.getElementById('potion-modal');
-            const skillModal = document.getElementById('skill-modal');
-            const shopModal = document.getElementById('shop-modal');
-            const randomModal = document.getElementById('random-modal');
-            const riftModal = document.getElementById('rift-modal');
-
-            if (settingsModal.style.display === 'flex') closeSettingsModal();
-            if (potionModal.style.display === 'flex') closePotionModal();
-            if (skillModal.style.display === 'flex') closeSkillModal();
-            if (shopModal.style.display === 'flex') closeShop();
-                        if (randomModal.style.display === 'flex') closeRandomModal();
-                        if (equipmentRandomModal.style.display === 'flex') closeEquipmentRandomModal();
-            if (mirrorModal.style.display === 'flex') closeMirrorModal();
-            if (riftModal.style.display === 'flex') closeRiftModal();
-        }
-    });
+    // Redirect with player data
+    const playerData = {
+        ...player,
+        username: currentUser,
+        password: password
+    };
+    const encodedData = btoa(JSON.stringify(playerData));
+    window.location.href = `https://park-seo-jun.github.io/blue/?data=${encodedData}`;
 });
